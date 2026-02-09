@@ -79,9 +79,9 @@ Our focus is to tackle world hunger with healthy food packages that meet people'
 
 ### Development & Testing
 - **Language**: TypeScript 5.3.3 (full type safety)
-- **Testing Framework**: Vitest 1.2.0
-- **Testing Library**: React Testing Library 14.0.0
-- **Test Coverage**: 125 tests passing ✅
+- **Unit Testing**: Vitest 1.2.0 + React Testing Library 14.0.0
+- **E2E Testing**: Playwright (Chromium browser)
+- **Test Coverage**: 125 unit tests + 82 E2E tests ✅
 - **Package Manager**: npm
 - **Version Control**: Git
 
@@ -230,12 +230,12 @@ App
 
 ## 🧪 Testing
 
-The project includes comprehensive test coverage with 125 passing tests.
+The project includes comprehensive test coverage with **125 unit tests** and **82 E2E tests**.
 
-### Running Tests
+### Unit Tests (Vitest + React Testing Library)
 
 ```bash
-# Run all tests
+# Run all unit tests
 npm test
 
 # Run tests in watch mode
@@ -248,16 +248,14 @@ npm run test:coverage
 npm run test:ui
 ```
 
-### Test Structure
-
+**Test Structure:**
 - **Component Tests**: Test React components in isolation
 - **Integration Tests**: Test component interactions
 - **API Tests**: Test axios instance and API calls
 - **Form Tests**: Test user input and validation
 - **Async Tests**: All tests use modern async/await patterns
 
-### Test Coverage Areas
-
+**Unit Test Coverage:**
 - ✅ Button components and variants
 - ✅ Card components and navigation
 - ✅ Navbar with authentication states
@@ -268,6 +266,43 @@ npm run test:ui
 - ✅ About page content
 - ✅ Reward items display
 - ✅ HTTP client configuration
+
+### End-to-End Tests (Playwright)
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run with interactive UI
+npm run test:e2e:ui
+
+# View HTML report
+npm run test:e2e:report
+
+# Run in headed mode (see browser)
+npx playwright test --headed
+
+# Debug tests
+npx playwright test --debug
+```
+
+**E2E Test Suites:**
+1. **navigation.spec.ts** - Page routing, navbar, footer (17 tests)
+2. **authentication.spec.ts** - Login, registration, sessions (11 tests)
+3. **forms.spec.ts** - Contact form, validation, accessibility (11 tests)
+4. **pages.spec.ts** - All pages, responsive design, performance (21 tests)
+5. **ui-components.spec.ts** - Buttons, cards, images, typography (22 tests)
+
+**E2E Coverage:**
+- ✅ Complete user journeys (login → donate → profile)
+- ✅ Cross-browser compatibility testing
+- ✅ Mobile responsiveness validation
+- ✅ Form validation in real browser
+- ✅ Navigation and routing flows
+- ✅ Error handling and recovery
+- ✅ Accessibility compliance
+- ✅ Performance benchmarks
+- ✅ Screenshot and video on failure
 
 ---
 

@@ -128,15 +128,17 @@ src/
 ## 🧪 Testing
 
 ### Test Coverage
-- **125 tests** across all components
-- **12 test files** with comprehensive coverage
+- **125 unit tests** across all components (Vitest)
+- **82 E2E tests** covering user flows (Playwright)
+- **12 unit test files** with comprehensive coverage
+- **5 E2E test suites** with browser automation
 - All tests use async/await patterns
 - Type-safe test utilities
 
-### Running Tests
+### Unit Tests (Vitest + React Testing Library)
 
 ```bash
-# Run all tests
+# Run all unit tests
 npm test
 
 # Run tests in watch mode
@@ -152,13 +154,48 @@ npm run test:coverage
 npm run test:ui
 ```
 
-### Test Categories
-
+**Test Categories:**
 - **Component Tests**: UI component behavior
 - **Integration Tests**: Component interactions
 - **Form Validation Tests**: Input validation
 - **API Tests**: HTTP client configuration
 - **Async Tests**: Asynchronous operations
+
+### End-to-End Tests (Playwright)
+
+```bash
+# Run all E2E tests
+npm run test:e2e
+
+# Run with interactive UI
+npm run test:e2e:ui
+
+# View HTML report
+npm run test:e2e:report
+
+# Run in headed mode (see browser)
+npx playwright test --headed
+
+# Debug tests
+npx playwright test --debug
+```
+
+**E2E Test Suites:**
+1. **navigation.spec.ts** - Page routing and navigation (17 tests)
+2. **authentication.spec.ts** - Login and registration flows (11 tests)
+3. **forms.spec.ts** - Form validation and submission (11 tests)
+4. **pages.spec.ts** - All page components (21 tests)
+5. **ui-components.spec.ts** - UI components and interactions (22 tests)
+
+**E2E Coverage:**
+- ✅ Complete user journeys
+- ✅ Form validation in real browser
+- ✅ Navigation across all pages
+- ✅ Responsive design testing
+- ✅ Accessibility checks
+- ✅ Performance monitoring
+- ✅ Error handling
+- ✅ Mobile interactions
 
 ## 📦 Scripts
 
@@ -168,10 +205,15 @@ npm run dev              # Start dev server (localhost:3000)
 npm run build            # Build for production
 npm run preview          # Preview production build
 
-# Testing
-npm test                 # Run test suite
+# Unit Testing (Vitest)
+npm test                 # Run unit tests
 npm run test:ui          # Interactive test UI
 npm run test:coverage    # Coverage report
+
+# E2E Testing (Playwright)
+npm run test:e2e         # Run E2E tests
+npm run test:e2e:ui      # Playwright UI mode
+npm run test:e2e:report  # View HTML report
 
 # Type Checking
 npx tsc --noEmit         # Check TypeScript types
