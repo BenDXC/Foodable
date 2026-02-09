@@ -1,70 +1,383 @@
-# Getting Started with Create React App
+# 🍽️ Foodable Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Modern React + TypeScript + Vite application for the Foodable food donation platform.
 
-## Available Scripts
+## 🚀 Quick Start
 
-In the project directory, you can run:
+```bash
+# Install dependencies
+npm install
 
-### `npm start`
+# Start development server
+npm run dev
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+# Run tests
+npm test
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# Build for production
+npm run build
+```
 
-### `npm test`
+## 📋 Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 18.x or higher
+- npm 9.x or higher
 
-### `npm run build`
+## 🛠️ Tech Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **React 18.2.0** - UI framework with latest features
+- **TypeScript 5.3.3** - Type-safe JavaScript
+- **Vite 5.0.12** - Next generation frontend tooling
+- **React Router DOM 6.2.1** - Client-side routing
+- **Axios** - HTTP client with interceptors
+- **Vitest** - Unit testing framework
+- **React Testing Library** - Component testing utilities
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 📁 Project Structure
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```
+src/
+├── Components/
+│   ├── Axios/
+│   │   ├── http.ts              # Axios instance configuration
+│   │   └── http.test.tsx        # HTTP client tests
+│   ├── MPComponents/            # Reusable UI components
+│   │   ├── Button.tsx           # Button variants (Login, Donator, Receiver, etc.)
+│   │   ├── Button.test.tsx      # Button component tests
+│   │   ├── Cards.tsx            # Feature cards display
+│   │   ├── Cards.test.tsx       # Cards tests
+│   │   ├── CardItem.tsx         # Individual card component
+│   │   ├── CardItem.test.tsx    # Card item tests
+│   │   ├── Navbar.tsx           # Navigation bar with auth
+│   │   ├── Navbar.test.tsx      # Navbar tests
+│   │   ├── Footer.tsx           # Footer with links
+│   │   └── Footer.test.tsx      # Footer tests
+│   └── pages/                   # Page components
+│       ├── Home.tsx             # Landing page
+│       ├── Home.test.tsx        # Home page tests
+│       ├── Login.tsx            # Login form with validation
+│       ├── Login.test.tsx       # Login tests
+│       ├── Registration.tsx     # User registration
+│       ├── Donator.tsx          # Donor interface
+│       ├── Receiver.tsx         # Receiver interface
+│       ├── ReceiverFiles/       # Receiver sub-components
+│       │   ├── FoodPackages.tsx
+│       │   ├── ItemList.tsx
+│       │   └── singleItem.tsx
+│       ├── Foodbank.tsx         # Foodbank locations
+│       ├── Profile.tsx          # User profile
+│       ├── Reward.tsx           # Rewards system
+│       ├── RewardItem.tsx       # Individual reward
+│       ├── RewardItem.test.tsx  # Reward tests
+│       ├── About.tsx            # About page
+│       ├── About.test.tsx       # About tests
+│       ├── Contact.tsx          # Contact form
+│       ├── Contact.test.tsx     # Contact tests
+│       ├── Logout.tsx           # Logout handler
+│       └── cssFiles/            # Component-specific styles
+├── types/
+│   └── index.ts                 # TypeScript type definitions
+├── App.tsx                      # Main app component
+├── App.test.tsx                 # App tests
+├── index.tsx                    # Application entry point
+├── test-utils.tsx               # Test helper functions
+├── setupTests.ts                # Test configuration
+└── reportWebVitals.ts           # Performance monitoring
+```
 
-### `npm run eject`
+## 🎯 Features
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### User Roles
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### Donors
+- Register and login to donation system
+- Create food donation listings
+- View donation history
+- Earn rewards for contributions
+- Find nearby foodbanks
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### Receivers
+- Browse available food packages
+- Filter by dietary requirements
+- View foodbank locations on map
+- Access detailed item information
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+#### Foodbanks
+- Manage location information
+- Coordinate donations
+- Update inventory
 
-## Learn More
+### Core Functionality
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+#### Authentication
+- JWT-based authentication
+- Secure session management
+- Protected routes
+- User profile management
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+#### Maps Integration
+- Google Maps API integration
+- Location-based search
+- Interactive foodbank finder
 
-### Code Splitting
+#### Contact System
+- EmailJS integration
+- Contact form with validation
+- Direct email communication
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## 🧪 Testing
 
-### Analyzing the Bundle Size
+### Test Coverage
+- **125 tests** across all components
+- **12 test files** with comprehensive coverage
+- All tests use async/await patterns
+- Type-safe test utilities
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Running Tests
 
-### Making a Progressive Web App
+```bash
+# Run all tests
+npm test
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+# Run tests in watch mode
+npm test -- --watch
 
-### Advanced Configuration
+# Run specific test file
+npm test -- Button.test.tsx
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+# Run with coverage report
+npm run test:coverage
 
-### Deployment
+# Run with interactive UI
+npm run test:ui
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+### Test Categories
 
-### `npm run build` fails to minify
+- **Component Tests**: UI component behavior
+- **Integration Tests**: Component interactions
+- **Form Validation Tests**: Input validation
+- **API Tests**: HTTP client configuration
+- **Async Tests**: Asynchronous operations
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📦 Scripts
+
+```bash
+# Development
+npm run dev              # Start dev server (localhost:3000)
+npm run build            # Build for production
+npm run preview          # Preview production build
+
+# Testing
+npm test                 # Run test suite
+npm run test:ui          # Interactive test UI
+npm run test:coverage    # Coverage report
+
+# Type Checking
+npx tsc --noEmit         # Check TypeScript types
+```
+
+## 🔧 Configuration
+
+### Vite Configuration (`vite.config.ts`)
+
+```typescript
+- React plugin for JSX/TSX support
+- TypeScript configuration
+- Test environment setup (jsdom)
+- Build optimization
+- Development server on port 3000
+```
+
+### TypeScript Configuration (`tsconfig.json`)
+
+```json
+- Strict mode enabled
+- ES2020 target
+- React JSX support
+- Path aliases
+- Type checking for tests
+```
+
+## 🌐 API Integration
+
+### Base Configuration
+
+```typescript
+// src/Components/Axios/http.ts
+import axios from "axios";
+
+export default axios.create({
+  baseURL: "http://localhost:8080/api",
+  headers: {
+    "Content-type": "application/json"
+  }
+});
+```
+
+### Async/Await Pattern
+
+All API calls use modern async/await:
+
+```typescript
+const fetchData = async (): Promise<void> => {
+  try {
+    const response = await axios.get('/endpoint');
+    // Handle success
+  } catch (error) {
+    // Handle error
+  }
+};
+```
+
+## 🎨 Styling
+
+- **Modular CSS**: Component-scoped styles
+- **Responsive Design**: Mobile-first approach
+- **CSS Variables**: Consistent theming
+- **Font Awesome**: Icon library
+- **Google Fonts**: PT Sans typography
+
+## 🔐 Environment Variables
+
+Create `.env` file:
+
+```env
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_GOOGLE_MAPS_API_KEY=your_api_key
+VITE_EMAILJS_SERVICE_ID=gmail
+VITE_EMAILJS_TEMPLATE_ID=Automated_Email
+VITE_EMAILJS_USER_ID=user_mlsqPrWKZea6YAr2udP9X
+```
+
+## 🚀 Deployment
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+Output: `build/` directory with optimized assets
+
+### Preview Production Build
+
+```bash
+npm run preview
+```
+
+### Deployment Platforms
+
+Compatible with:
+- Vercel
+- Netlify
+- GitHub Pages
+- AWS Amplify
+- Azure Static Web Apps
+
+## 📝 Code Style
+
+### TypeScript Best Practices
+- Strict type checking enabled
+- Explicit return types for functions
+- Interface definitions for props
+- Type-safe event handlers
+
+### React Best Practices
+- Functional components with hooks
+- Custom hooks for reusable logic
+- Proper dependency arrays in useEffect
+- Memoization where appropriate
+
+### Async Patterns
+- async/await instead of .then()
+- Proper error handling with try/catch
+- Typed error objects (AxiosError)
+- Loading and error states
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Port already in use**
+```bash
+# Change port in vite.config.ts or use:
+npm run dev -- --port 3001
+```
+
+**Node version mismatch**
+```bash
+# Use nvm to switch Node version:
+nvm use 18
+```
+
+**TypeScript errors**
+```bash
+# Clear cache and reinstall:
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Test failures**
+```bash
+# Clear test cache:
+npm test -- --clearCache
+```
+
+## 📊 Performance
+
+- **Fast Refresh**: Instant HMR with Vite
+- **Optimized Builds**: Tree-shaking and code splitting
+- **Type Safety**: Catch errors at compile time
+- **Lazy Loading**: Route-based code splitting
+- **Asset Optimization**: Automatic image optimization
+
+## 🔄 State Management
+
+Currently using:
+- React useState for local state
+- sessionStorage for authentication
+- Props for component communication
+
+Future considerations:
+- Redux Toolkit for global state
+- React Query for server state
+- Zustand for simpler state management
+
+## 🌟 Future Enhancements
+
+- [ ] Progressive Web App (PWA) support
+- [ ] Offline functionality
+- [ ] Push notifications
+- [ ] Real-time updates with WebSockets
+- [ ] Advanced filtering and search
+- [ ] Multi-language support (i18n)
+- [ ] Dark mode theme
+- [ ] Advanced analytics dashboard
+
+## 🤝 Contributing
+
+1. Follow TypeScript strict mode guidelines
+2. Write tests for new features
+3. Use async/await for async operations
+4. Update types in `src/types/index.ts`
+5. Follow existing component structure
+6. Add proper error handling
+
+## 📚 Resources
+
+- [React Documentation](https://react.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [Vite Guide](https://vitejs.dev/guide/)
+- [Vitest Documentation](https://vitest.dev/)
+- [React Router](https://reactrouter.com/)
+
+## 📞 Support
+
+For issues or questions:
+- Create an issue in the repository
+- Email: foodable7@gmail.com
+
+---
+
+**Built with React ⚛️ + TypeScript 📘 + Vite ⚡**
