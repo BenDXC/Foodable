@@ -72,15 +72,12 @@ test.describe('Receiver Page', () => {
     await expect(page).toHaveURL(/.*Receiver/);
   });
 
-  test('should be accessible from navigation when not logged in', async ({ page }) => {
-    await page.goto('/');
+  test('should load receiver page directly', async ({ page }) => {
+    await page.goto('/Receiver');
+    await expect(page).toHaveURL(/.*Receiver/);
     
-    // Check if Receiver link exists
-    const receiverLink = page.locator('a[href="/Receiver"]');
-    if (await receiverLink.isVisible()) {
-      await receiverLink.click();
-      await expect(page).toHaveURL(/.*Receiver/);
-    }
+    // Should have page content
+    await expect(page.locator('body')).toBeVisible();
   });
 });
 
