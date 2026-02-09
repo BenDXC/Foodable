@@ -48,9 +48,13 @@ function CreateDonation(): JSX.Element {
     <div className="profilecontainer">
       <div className="cdbackground">
         <div className="itemform">
-          <h1 className="titleil">Create Donation</h1>
-          <form className="create-form" onSubmit={handleSubmit}>
-            <h2 className="itemname">Item name</h2>
+          <h1 className="titleil" id="donation-form-heading">Create Donation</h1>
+          <form 
+            className="create-form" 
+            onSubmit={handleSubmit}
+            aria-labelledby="donation-form-heading"
+          >
+            <h2 className="itemname" id="item-name-label">Item name</h2>
             <input
               type="text"
               name="itemName"
@@ -59,8 +63,11 @@ function CreateDonation(): JSX.Element {
               value={formData.itemName || ''}
               onChange={handleChange}
               required
+              aria-required="true"
+              aria-labelledby="item-name-label"
+              aria-label="Enter the name of the item you are donating"
             />
-            <h2 className="itemquantity">Item quantity</h2>
+            <h2 className="itemquantity" id="item-quantity-label">Item quantity</h2>
             <input
               type="number"
               name="itemQuantity"
@@ -71,8 +78,12 @@ function CreateDonation(): JSX.Element {
               min={1}
               max={100}
               required
+              aria-required="true"
+              aria-labelledby="item-quantity-label"
+              aria-label="Enter quantity between 1 and 100"
             />
-            <h2 className="dtitle">Select dietary preference</h2>
+            <h2 className="dtitle" id="dietary-preference-legend">Select dietary preference</h2>
+            <fieldset aria-labelledby="dietary-preference-legend" role="radiogroup">
             <input
               type="radio"
               name="dietaryPreference"
@@ -113,32 +124,42 @@ function CreateDonation(): JSX.Element {
               onChange={handleChange}
             />
             <label htmlFor="dietary-vegetarian"> Vegetarian</label>
+            </fieldset>
             <br />
-            <h2 className="extitle">Expiry date</h2>
+            <h2 className="extitle" id="expiry-date-label">Expiry date</h2>
             <input 
               type="date" 
               name="expiryDate" 
               id="Expiry" 
               value={formData.expiryDate || ''}
               onChange={handleChange}
-              required 
+              required
+              aria-required="true"
+              aria-labelledby="expiry-date-label"
+              aria-label="Select expiry date for the item"
             />
-            <h2 className="imagetitle">Upload image</h2>
+            <h2 className="imagetitle" id="image-upload-label">Upload image</h2>
             <input
               type="file"
               id="FoodImage"
               name="image"
               accept="image/*"
               onChange={handleChange}
+              aria-labelledby="image-upload-label"
+              aria-label="Upload an image of the food item (optional)"
             />
             <br />
-            <button type="submit" className="sub-btn">
+            <button 
+              type="submit" 
+              className="sub-btn"
+              aria-label="Add item to donation package"
+            >
               Add item
             </button>
           </form>
-          <h2 className="ptitle">Item added to package</h2>
-          <div className="itemlist">
-            <ul className="ilist">
+          <h2 className="ptitle" id="package-items-heading">Item added to package</h2>
+          <div className="itemlist" role="region" aria-labelledby="package-items-heading">
+            <ul className="ilist" role="list" aria-label="Items in current package">
               <li>
                 <span>x</span>
               </li>
@@ -149,7 +170,11 @@ function CreateDonation(): JSX.Element {
                 <span>x</span>
               </li>
             </ul>
-            <button type="submit" className="cp-btn">
+            <button 
+              type="submit" 
+              className="cp-btn"
+              aria-label="Create and submit donation package"
+            >
               Create package
             </button>
           </div>

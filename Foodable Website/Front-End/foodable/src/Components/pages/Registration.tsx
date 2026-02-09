@@ -110,76 +110,95 @@ function Registration(): JSX.Element {
     <React.Fragment>
       <div className="user">
         <header className="page_header_logo">
-          <h1 className="page_title">Sign up</h1>
+          <h1 className="page_title" id="registration-heading">Sign up</h1>
         </header>
       </div>
-      <form className="Registration-form" onSubmit={handleSubmit} noValidate>
+      <form 
+        className="Registration-form" 
+        onSubmit={handleSubmit} 
+        noValidate
+        aria-labelledby="registration-heading"
+        aria-describedby={output ? "registration-status" : undefined}
+      >
         <div className="form-group">
-          <label className="textInput">
+          <label className="textInput" htmlFor="username-input">
             Username:
             <input
+              id="username-input"
               name="username"
               value={inputs.username || ""}
               onChange={handleChange}
               placeholder="Enter your name"
               className="form__input"
-              required=""
+              required
+              aria-required="true"
+              aria-label="Enter your username"
+              maxLength={50}
             />
           </label>
         </div>
         <div className="form-group">
-          <label className="textInput">
+          <label className="textInput" htmlFor="email-reg-input">
             Email:
             <input
+              id="email-reg-input"
               type="email"
               name="email"
               value={inputs.email || ""}
               onChange={handleChange}
               placeholder="Enter Email"
               className="form__input"
-              required=""
+              required
+              aria-required="true"
+              aria-label="Enter your email address"
             />
           </label>
         </div>
         <div className="form-group">
-          <label className="textInput">
+          <label className="textInput" htmlFor="password-reg-input">
             Password:
             <input
+              id="password-reg-input"
               type="password"
               name="password"
-              id="create_pw"
               placeholder="Password"
               className="form__input"
-              required=""
+              required
               minLength={8}
               value={inputs.password || ""}
               onChange={handleChange}
+              aria-required="true"
+              aria-label="Create a password (minimum 8 characters)"
             />
           </label>
         </div>
         <div className="form-group">
-          <label className="textInput">
+          <label className="textInput" htmlFor="confirm-password-input">
             Re-type password:
             <input
+              id="confirm-password-input"
               type="password"
               name="repPassword"
               value={inputs.repPassword || ""}
               onChange={handleChange}
-              id="create_pw"
               placeholder=" Enter your Password again"
               className="form__input"
-              required=""
+              required
+              aria-required="true"
+              aria-label="Confirm your password"
             />
           </label>
         </div>
         <div className="tosbox">
-          <label>
+          <label htmlFor="tos-checkbox">
             <input
+              id="tos-checkbox"
               type="checkbox"
               name="tos"
-              checked={inputs.isTos}
+              checked={inputs.tos || false}
               onChange={handleChange}
               required
+              aria-required="true"
             />
             I agree to the Terms of Use and the Privacy Policy.
           </label>
@@ -190,6 +209,8 @@ function Registration(): JSX.Element {
             type="submit" 
             disabled={loading}
             value={loading ? "Registering..." : "Register"}
+            aria-label={loading ? "Registration in progress" : "Submit registration form"}
+            aria-busy={loading}
           />
         </div>
         <p className="sign-inmessage">Or if you have an account</p>
@@ -197,8 +218,12 @@ function Registration(): JSX.Element {
           <Button className="btn-mobile"> Sign in</Button>
         </div>
       </form>
-      <div className="center">
-        <p>{output}</p>
+      <div className="center" role="status" aria-live="polite">
+        {output && (
+          <p id="registration-status" role="alert">
+            {output}
+          </p>
+        )}
       </div>
     </React.Fragment>
   );

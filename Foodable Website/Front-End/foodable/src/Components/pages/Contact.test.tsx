@@ -56,7 +56,7 @@ describe('ContactUs Component', () => {
   it('renders submit button', () => {
     render(<ContactUs />);
     
-    const submitButton = screen.getByRole('button', { name: /submit/i });
+    const submitButton = screen.getByDisplayValue(/send a message/i);
     expect(submitButton).toBeInTheDocument();
   });
 
@@ -74,7 +74,7 @@ describe('ContactUs Component', () => {
     await user.type(emailInput, 'john@example.com');
     await user.type(messageInput, 'This is a test message');
     
-    const submitButton = screen.getByRole('button', { name: /submit/i });
+    const submitButton = screen.getByDisplayValue(/send a message/i);
     await user.click(submitButton);
     
     await waitFor(() => {
@@ -96,7 +96,7 @@ describe('ContactUs Component', () => {
     await user.type(emailInput, 'john@example.com');
     await user.type(messageInput, 'This is a test message');
     
-    const submitButton = screen.getByRole('button', { name: /submit/i });
+    const submitButton = screen.getByDisplayValue(/send a message/i);
     await user.click(submitButton);
     
     await waitFor(() => {
@@ -119,7 +119,7 @@ describe('ContactUs Component', () => {
     await user.type(emailInput, 'john@example.com');
     await user.type(messageInput, 'This is a test message');
     
-    const submitButton = screen.getByRole('button', { name: /submit/i });
+    const submitButton = screen.getByDisplayValue(/send a message/i);
     await user.click(submitButton);
     
     await waitFor(() => {

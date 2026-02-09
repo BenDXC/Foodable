@@ -123,19 +123,19 @@ describe('Footer Component', () => {
 
     it('renders Facebook icon with aria-label', () => {
       const { container } = renderWithRouter(<Footer />);
-      const facebookIcon = container.querySelector('[aria-label="Facebook"]');
+      const facebookIcon = container.querySelector('[aria-label="Visit our Facebook page"]');
       expect(facebookIcon).toBeInTheDocument();
     });
 
     it('renders Instagram icon with aria-label', () => {
       const { container } = renderWithRouter(<Footer />);
-      const instagramIcon = container.querySelector('[aria-label="Instagram"]');
+      const instagramIcon = container.querySelector('[aria-label="Visit our Instagram page"]');
       expect(instagramIcon).toBeInTheDocument();
     });
 
     it('renders Youtube icon with aria-label', () => {
       const { container } = renderWithRouter(<Footer />);
-      const youtubeIcon = container.querySelector('[aria-label="Youtube"]');
+      const youtubeIcon = container.querySelector('[aria-label="Visit our YouTube channel"]');
       expect(youtubeIcon).toBeInTheDocument();
     });
   });

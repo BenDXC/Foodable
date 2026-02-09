@@ -4,11 +4,11 @@ import CardItem from "./CardItem";
 
 const Cards: React.FC = (): JSX.Element => {
   return (
-    <div className="cards">
+    <section className="cards" aria-label="Website features">
       <h1>Check out the features of our Website!</h1>
       <div className="cards__container">
         <div className="cards__wrapper">
-          <ul className="cards__items">
+          <ul className="cards__items" role="list">
             <CardItem
               src="../Img/Image_1.png"
               text="Send food to a foodbank to help people in need"
@@ -38,7 +38,7 @@ const Cards: React.FC = (): JSX.Element => {
           </ul>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

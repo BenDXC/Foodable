@@ -35,7 +35,8 @@ describe('CardItem Component', () => {
   it('renders image with alt text', () => {
     renderWithRouter(<CardItem {...mockProps} />);
     const image = screen.getByRole('img');
-    expect(image).toHaveAttribute('alt', 'Features');
+    expect(image).toHaveAttribute('alt');
+    expect(image.getAttribute('alt')).toContain('Test Label');
   });
 
   it('links to correct path', () => {

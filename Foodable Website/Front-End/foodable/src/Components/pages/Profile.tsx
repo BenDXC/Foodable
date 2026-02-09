@@ -53,71 +53,99 @@ function Profile(): JSX.Element {
   return (
     <>
       <div className="editprofile">
-        <h1 className="mtitle">Edit Profile</h1>
+        <h1 className="mtitle" id="profile-heading">Edit Profile</h1>
         <br />
         <div className="row">
           {/* left column */}
           <div className="text-center">
-            <img src="Img/foodable1mini.jpg" className="avatar" alt="avatar" />
-            <h4 className="cpp">Change profile picture</h4>
-            <input type="file" className="imagebtn" accept="image/*" />
+            <img 
+              src="Img/foodable1mini.jpg" 
+              className="avatar" 
+              alt="Current profile picture" 
+            />
+            <h4 className="cpp" id="profile-picture-label">Change profile picture</h4>
+            <input 
+              type="file" 
+              className="imagebtn" 
+              accept="image/*"
+              aria-labelledby="profile-picture-label"
+              aria-label="Upload new profile picture"
+            />
           </div>
         </div>
         {/* edit form column */}
         <h3 className="pititle">Personal info</h3>
-        <form className="Profile-Form" onSubmit={handleSubmit}>
+        <form 
+          className="Profile-Form" 
+          onSubmit={handleSubmit}
+          aria-labelledby="profile-heading"
+        >
           <div className="form-group">
-            <label className="fnlabel">First name:</label>
+            <label className="fnlabel" htmlFor="profile-firstname">First name:</label>
             <div className="col-lg-8">
               <input 
+                id="profile-firstname"
                 className="form-control" 
                 type="text" 
                 name="firstName"
                 value={formData.firstName || ''} 
                 onChange={handleChange}
+                aria-label="Enter your first name"
               />
             </div>
           </div>
           <div className="form-group">
-            <label className="col-lg-3 control-label">Last name:</label>
+            <label className="col-lg-3 control-label" htmlFor="profile-lastname">Last name:</label>
             <div className="col-lg-8">
               <input 
+                id="profile-lastname"
                 className="form-control" 
                 type="text" 
                 name="lastName"
                 value={formData.lastName || ''} 
                 onChange={handleChange}
+                aria-label="Enter your last name"
               />
             </div>
           </div>
           <div className="form-group">
-            <label className="col-lg-3 control-label">Postcode:</label>
+            <label className="col-lg-3 control-label" htmlFor="profile-postcode">Postcode:</label>
             <div className="col-lg-8">
               <input
+                id="profile-postcode"
                 className="form-control"
                 type="text"
                 name="postcode"
                 value={formData.postcode || ''}
                 onChange={handleChange}
+                aria-label="Enter your postcode"
               />
             </div>
           </div>
           <div className="form-group">
-            <label className="col-lg-3 control-label">Email:</label>
+            <label className="col-lg-3 control-label" htmlFor="profile-email">Email:</label>
             <div className="col-lg-8">
               <input
+                id="profile-email"
                 className="form-control"
                 type="email"
                 name="email"
                 value={formData.email || ''}
                 onChange={handleChange}
+                aria-label="Enter your email address"
               />
             </div>
           </div>
           <div className="form-group">
             <div className="col-lg-8"></div>
           </div>
-          <button type="submit" className="sub-btn" disabled={loading}>
+          <button 
+            type="submit" 
+            className="sub-btn" 
+            disabled={loading}
+            aria-label={loading ? "Saving changes, please wait" : "Confirm profile changes"}
+            aria-busy={loading}
+          >
             {loading ? 'Saving...' : 'Confirm changes'}
           </button>
         </form>

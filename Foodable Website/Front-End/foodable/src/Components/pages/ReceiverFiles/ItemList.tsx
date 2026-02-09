@@ -23,31 +23,51 @@ export default function ItemList({ products, buttonhandler }: ItemListProps): JS
 
   return (
     <React.Fragment>
-      <div className="instruction"> Please select a filter</div>
-      <div className="btns">
-        <button value="All" onClick={buttonhandler}>
+      <div className="instruction" role="status">Please select a filter</div>
+      <div className="btns" role="group" aria-label="Food package filters">
+        <button 
+          value="All" 
+          onClick={buttonhandler}
+          aria-label="Show all food packages"
+        >
           All
         </button>
-        <button value="Halal" onClick={buttonhandler}>
+        <button 
+          value="Halal" 
+          onClick={buttonhandler}
+          aria-label="Filter for halal food packages"
+        >
           Halal
         </button>
-        <button value="Vegan" onClick={buttonhandler}>
+        <button 
+          value="Vegan" 
+          onClick={buttonhandler}
+          aria-label="Filter for vegan food packages"
+        >
           Vegan
         </button>
-        <button value="Vegetarian" onClick={buttonhandler}>
+        <button 
+          value="Vegetarian" 
+          onClick={buttonhandler}
+          aria-label="Filter for vegetarian food packages"
+        >
           Vegetarian
         </button>
       </div>
 
-      <div>
-        {products.map((product) => (
-          <div key={product.packageID}>
-            <SingleItem product={product} />
-            <Button_Verify onClick={generateOTP}>
-              Get the OTP Code here
-            </Button_Verify>
-          </div>
-        ))}
+      <div role="region" aria-label="Available food packages">
+        {products.length === 0 ? (
+          <p role="status">No packages match your filter. Please select a different filter.</p>
+        ) : (
+          products.map((product) => (
+            <div key={product.packageID}>
+              <SingleItem product={product} />
+              <Button_Verify onClick={generateOTP}>
+                Get the OTP Code here
+              </Button_Verify>
+            </div>
+          ))
+        )}
       </div>
     </React.Fragment>
   );

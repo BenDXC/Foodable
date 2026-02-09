@@ -26,26 +26,26 @@ export default function ContactUs(): JSX.Element {
   return (
     <div className="container">
       <div className="content">
-        <div className="left-side">
+        <div className="left-side" role="complementary" aria-label="Contact information">
           <div className="address details">
-            <a href="#" className="icon-decoration">
-              <i className="fas fa-map-marker-alt" />
+            <a href="#" className="icon-decoration" aria-label="Our address">
+              <i className="fas fa-map-marker-alt" aria-hidden="true" />
               <div className="topic">Address</div>
             </a>
             <div className="text-one" />
             <div className="text-two" />
           </div>
           <div className="phone details">
-            <a href="#" className="icon-decoration">
-              <i className="fas fa-phone-alt" />
+            <a href="#" className="icon-decoration" aria-label="Our phone number">
+              <i className="fas fa-phone-alt" aria-hidden="true" />
               <div className="topic">Phone</div>
             </a>
             <div className="text-one" />
             <div className="text-two" />
           </div>
           <div className="email details">
-            <a href="#" className="icon-decoration">
-              <i className="fas fa-envelope" />
+            <a href="#" className="icon-decoration" aria-label="Our email address">
+              <i className="fas fa-envelope" aria-hidden="true" />
               <div className="topic">Email</div>
             </a>
             <div className="text-one" />
@@ -55,8 +55,17 @@ export default function ContactUs(): JSX.Element {
         <div className="right-side">
           <div id="google-map" className="contact-container-address">
             <h3 className="contact-container-address-title">Our Location</h3>
-         <iframe
-             src="https://my.atlistmaps.com/map/8d0c2d8e-7923-4e2a-9ba3-f6cb51fcc204?share=true" allow="geolocation" width="100%" height="400px" frameborder="0" scrolling="no" allowfullscreen></iframe>
+            <iframe
+              src="https://my.atlistmaps.com/map/8d0c2d8e-7923-4e2a-9ba3-f6cb51fcc204?share=true" 
+              allow="geolocation" 
+              width="100%" 
+              height="400px" 
+              frameBorder="0" 
+              scrolling="no" 
+              allowFullScreen
+              title="Foodable location map"
+              aria-label="Interactive map showing Foodable office locations"
+            />
           </div>
           <br></br>
           <div id="number-details" className="contact-container-number">
@@ -78,37 +87,56 @@ export default function ContactUs(): JSX.Element {
           </div>
           <br></br>
           <div id="message-form" className="contact-container-send-message">
-            <div className="topic-text">Send us a message</div>
+            <div className="topic-text" id="contact-form-heading">Send us a message</div>
             <p className="topic-text-p">
               Any queries about the Foodable Website
             </p>
-            <form onSubmit={sendEmail}>
+            <form 
+              onSubmit={sendEmail}
+              aria-labelledby="contact-form-heading"
+            >
               <div className="input-box">
+                <label htmlFor="contact-name" className="sr-only">Your name</label>
                 <input
+                  id="contact-name"
                   type="text"
                   placeholder="Your name"
-                  required=""
+                  required
                   name="name"
+                  aria-required="true"
+                  aria-label="Enter your name"
                 />
               </div>
               <div className="input-box">
+                <label htmlFor="contact-email" className="sr-only">Your email</label>
                 <input
+                  id="contact-email"
                   type="email"
                   placeholder="What's your email?"
-                  required=""
+                  required
                   name="email"
+                  aria-required="true"
+                  aria-label="Enter your email address"
                 />
               </div>
               <div className="input-box message-box">
+                <label htmlFor="contact-message" className="sr-only">Your message</label>
                 <textarea
-                  required=""
+                  id="contact-message"
+                  required
                   placeholder="Your questions..."
                   defaultValue={""}
                   name="message"
+                  aria-required="true"
+                  aria-label="Enter your message or question"
                 />
               </div>
               <div className="button">
-                <input type="submit" defaultValue="Send a Message" />
+                <input 
+                  type="submit" 
+                  defaultValue="Send a Message"
+                  aria-label="Send message to Foodable"
+                />
               </div>
             </form>
           </div>

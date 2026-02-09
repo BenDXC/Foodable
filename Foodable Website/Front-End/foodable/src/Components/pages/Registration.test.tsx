@@ -25,45 +25,39 @@ describe('Registration Component', () => {
     vi.clearAllMocks();
   });
 
-  it('renders registration form', async () => {
-    await new Promise<void>((resolve) => {
-      renderWithRouter(<Registration />);
-      
-      expect(screen.getByText('Sign up')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Enter your name')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Enter Email')).toBeInTheDocument();
-      resolve();
-    });
+  it('renders registration form', () => {
+    renderWithRouter(<Registration />);
+    
+    expect(screen.getByText('Sign up')).toBeInTheDocument();
+    expect(screen.getByLabelText('Enter your username')).toBeInTheDocument();
+    expect(screen.getByLabelText('Enter your email address')).toBeInTheDocument();
   });
 
   it('renders all form fields', async () => {
     await new Promise<void>((resolve) => {
-      renderWithRouter(<Registration />);
+      const { container } = renderWithRouter(<Registration />);
       
-      expect(screen.getByLabelText('Username:')).toBeInTheDocument();
-      expect(screen.getByLabelText('Email:')).toBeInTheDocument();
-      expect(screen.getByLabelText('Password:')).toBeInTheDocument();
-      expect(screen.getByLabelText('Re-type password:')).toBeInTheDocument();
+      expect(container.querySelector('#username-input')).toBeInTheDocument();
+      expect(container.querySelector('#email-reg-input')).toBeInTheDocument();
+      expect(container.querySelector('#password-reg-input')).toBeInTheDocument();
+      expect(container.querySelector('#confirm-password-input')).toBeInTheDocument();
       resolve();
     });
   });
 
-  it('renders terms of service checkbox', async () => {
-    await new Promise<void>((resolve) => {
-      renderWithRouter(<Registration />);
-      
-      const checkbox = screen.getByRole('checkbox');
-      expect(checkbox).toBeInTheDocument();
-      expect(screen.getByText(/I agree to the Terms of Use/i)).toBeInTheDocument();
-      resolve();
-    });
+  it('renders terms of service checkbox', () => {
+    renderWithRouter(<Registration />);
+    
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toBeInTheDocument();
+    expect(screen.getByText(/I agree to the Terms of Use/i)).toBeInTheDocument();
   });
 
   it('updates form fields on user input', async () => {
     const user = userEvent.setup();
     renderWithRouter(<Registration />);
     
-    const usernameInput = screen.getByPlaceholderText('Enter your name');
+    const usernameInput = screen.getByLabelText('Enter your username');
     await user.type(usernameInput, 'testuser');
     
     expect(usernameInput).toHaveValue('testuser');
@@ -73,11 +67,11 @@ describe('Registration Component', () => {
     const user = userEvent.setup();
     renderWithRouter(<Registration />);
     
-    const submitButton = screen.getByRole('button', { name: /register/i });
+    const submitButton = screen.getByDisplayValue(/register/i);
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(screen.getByText(/Please fill in all text fields/i)).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(/Please fill in all text fields/i);
     });
   });
 
@@ -85,16 +79,16 @@ describe('Registration Component', () => {
     const user = userEvent.setup();
     renderWithRouter(<Registration />);
     
-    await user.type(screen.getByPlaceholderText('Enter your name'), 'testuser');
-    await user.type(screen.getByPlaceholderText('Enter Email'), 'invalid-email');
-    await user.type(screen.getByPlaceholderText('Password'), 'password123');
-    await user.type(screen.getByPlaceholderText('Enter your Password again'), 'password123');
+    await user.type(screen.getByLabelText('Enter your username'), 'testuser');
+    await user.type(screen.getByLabelText('Enter your email address'), 'invalid-email');
+    await user.type(screen.getByLabelText(/Create a password/), 'password123');
+    await user.type(screen.getByLabelText('Confirm your password'), 'password123');
     
-    const submitButton = screen.getByRole('button', { name: /register/i });
+    const submitButton = screen.getByDisplayValue(/register/i);
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(screen.getByText(/Invalid e-mail address/i)).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(/Invalid e-mail address/i);
     });
   });
 
@@ -102,16 +96,16 @@ describe('Registration Component', () => {
     const user = userEvent.setup();
     renderWithRouter(<Registration />);
     
-    await user.type(screen.getByPlaceholderText('Enter your name'), 'testuser');
-    await user.type(screen.getByPlaceholderText('Enter Email'), 'test@example.com');
-    await user.type(screen.getByPlaceholderText('Password'), 'password123');
-    await user.type(screen.getByPlaceholderText('Enter your Password again'), 'different');
+    await user.type(screen.getByLabelText('Enter your username'), 'testuser');
+    await user.type(screen.getByLabelText('Enter your email address'), 'test@example.com');
+    await user.type(screen.getByLabelText(/Create a password/), 'password123');
+    await user.type(screen.getByLabelText('Confirm your password'), 'different');
     
-    const submitButton = screen.getByRole('button', { name: /register/i });
+    const submitButton = screen.getByDisplayValue(/register/i);
     await user.click(submitButton);
     
     await waitFor(() => {
-      expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(/Passwords do not match/i);
     });
   });
 
@@ -124,13 +118,13 @@ describe('Registration Component', () => {
     
     renderWithRouter(<Registration />);
     
-    await user.type(screen.getByPlaceholderText('Enter your name'), 'testuser');
-    await user.type(screen.getByPlaceholderText('Enter Email'), 'test@example.com');
-    await user.type(screen.getByPlaceholderText('Password'), 'password123');
-    await user.type(screen.getByPlaceholderText('Enter your Password again'), 'password123');
+    await user.type(screen.getByLabelText('Enter your username'), 'testuser');
+    await user.type(screen.getByLabelText('Enter your email address'), 'test@example.com');
+    await user.type(screen.getByLabelText(/Create a password/), 'password123');
+    await user.type(screen.getByLabelText('Confirm your password'), 'password123');
     await user.click(screen.getByRole('checkbox'));
     
-    const submitButton = screen.getByRole('button', { name: /register/i });
+    const submitButton = screen.getByDisplayValue(/register/i);
     await user.click(submitButton);
     
     await waitFor(() => {

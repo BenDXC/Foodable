@@ -23,11 +23,12 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <>
-      <Link to="/Login" className="btn-mobile">
+      <Link to="/Login" className="btn-mobile" aria-label="Go to login page">
         <button
           className={`btn ${checkButtonStyle} ${checkButtonSize}`}
           onClick={onClick}
           type={type}
+          aria-label="Login button"
         >
           {children}
         </button>
@@ -53,11 +54,12 @@ export const Button_D: React.FC<ButtonProps> = ({
 
   return (
     <>
-      <Link to="/Donator" className="btn-mobile">
+      <Link to="/Donator" className="btn-mobile" aria-label="Go to donator page">
         <button
           className={`btn ${checkButtonStyle} ${checkButtonSize}`}
           onClick={onClick}
           type={type}
+          aria-label="Donator button"
         >
           {children}
         </button>
@@ -83,11 +85,12 @@ export const Button_Receiver: React.FC<ButtonProps> = ({
 
   return (
     <>
-      <Link to="/Receiver" className="btn-mobile">
+      <Link to="/Receiver" className="btn-mobile" aria-label="Go to receiver page">
         <button
           className={`btn ${checkButtonStyle} ${checkButtonSize}`}
           onClick={onClick}
           type={type}
+          aria-label="Receiver button"
         >
           {children}
         </button>
@@ -113,11 +116,12 @@ export const Button_Register: React.FC<ButtonProps> = ({
 
   return (
     <>
-      <Link to="/Registration" className="btn-mobile">
+      <Link to="/Registration" className="btn-mobile" aria-label="Go to registration page">
         <button
           className={`btn ${checkButtonStyle} ${checkButtonSize}`}
           onClick={onClick}
           type={type}
+          aria-label="Register button"
         >
           {children}
         </button>
@@ -143,11 +147,12 @@ export const Button_Foodbank: React.FC<ButtonProps> = ({
 
   return (
     <>
-      <Link to="/Foodbank" className="btn-mobile">
+      <Link to="/Foodbank" className="btn-mobile" aria-label="Go to foodbank locations">
         <button
           className={`btn ${checkButtonStyle} ${checkButtonSize}`}
           onClick={onClick}
           type={type}
+          aria-label="Find foodbanks button"
         >
           {children}
         </button>
@@ -176,6 +181,7 @@ export const Button_Verify: React.FC<ButtonProps> = ({
         className={`btn ${checkButtonStyle} ${checkButtonSize}`}
         onClick={Generate}
         type={type}
+        aria-label="Generate verification OTP code"
       >
         {children}
       </button>

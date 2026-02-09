@@ -78,48 +78,68 @@ function NavbarR(): JSX.Element {
             <i className={click ? "fas fa-times" : "fas fa-bars"} />
           </div>
           <ul className={click ? "nav-menu active" : "nav-menu"}>
-            <li className="nav-item">
-              <Link to="/" className="nav-links" onClick={closeMobileMenu}>
+            <li className="nav-item" role="none">
+              <Link 
+                to="/" 
+                className="nav-links" 
+                onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to home page"
+              >
                 Home
               </Link>
             </li>
-            <li className="nav-item">
-              <Link to="/About" className="nav-links" onClick={closeMobileMenu}>
+            <li className="nav-item" role="none">
+              <Link 
+                to="/About" 
+                className="nav-links" 
+                onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to about page"
+              >
                 About
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Receiver"
                 className="nav-links"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to receiver page"
               >
                 Receiver
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Contact"
                 className="nav-links"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to contact page"
               >
                 Contact
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Login"
                 className="nav-links-mobile"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to login page"
               >
                 Login
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Registration"
                 className="nav-links-mobile"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to registration page"
               >
                 Signup
               </Link>
@@ -152,57 +172,87 @@ function NavbarD(): JSX.Element {
 
   return (
     <>
-      <nav className="navbar">
+      <nav className="navbar" role="navigation" aria-label="Main navigation">
         <div className="navbar-container">
-          <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
-            <img src="./Img/foodablemain.jpg"></img>
+          <Link to="/" className="navbar-logo" onClick={closeMobileMenu} aria-label="Foodable home page">
+            <img src="./Img/foodablemain.jpg" alt="Foodable logo" />
           </Link>
-          <div className="menu-icon" onClick={handleClick}>
-            <i className={click ? "fas fa-times" : "fas fa-bars"} />
-          </div>
-          <ul className={click ? "nav-menu active" : "nav-menu"}>
-            <li className="nav-item">
-              <Link to="/" className="nav-links" onClick={closeMobileMenu}>
+          <button 
+            className="menu-icon" 
+            onClick={handleClick}
+            aria-label={click ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={click}
+            aria-controls="nav-menu-donator"
+          >
+            <i className={click ? "fas fa-times" : "fas fa-bars"} aria-hidden="true" />
+          </button>
+          <ul 
+            id="nav-menu-donator"
+            className={click ? "nav-menu active" : "nav-menu"}
+            role="menubar"
+          >
+            <li className="nav-item" role="none">
+              <Link 
+                to="/" 
+                className="nav-links" 
+                onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to home page"
+              >
                 Home
               </Link>
             </li>
-            <li className="nav-item">
-              <Link to="/About" className="nav-links" onClick={closeMobileMenu}>
+            <li className="nav-item" role="none">
+              <Link 
+                to="/About" 
+                className="nav-links" 
+                onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to about page"
+              >
                 About
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Donator"
                 className="nav-links"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to donator page"
               >
                 Donator
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Contact"
                 className="nav-links"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to contact page"
               >
                 Contact
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/login"
                 className="nav-links-mobile"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to login page"
               >
                 Login
               </Link>
             </li>
-            <li className="nav-item">
+            <li className="nav-item" role="none">
               <Link
                 to="/Registration"
                 className="nav-links-mobile"
                 onClick={closeMobileMenu}
+                role="menuitem"
+                aria-label="Navigate to registration page"
               >
                 Signup
               </Link>

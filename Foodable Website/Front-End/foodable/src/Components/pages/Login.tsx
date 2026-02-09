@@ -12,6 +12,11 @@ interface LoginInputs {
   password?: string;
 }
 
+interface LoginErrors {
+  email?: string;
+  password?: string;
+}
+
 interface LoginResponse {
   token?: string;
   message?: string;
@@ -20,6 +25,7 @@ interface LoginResponse {
 export default function Login(props: SetUserProps): JSX.Element {
   const [inputs, setInput] = useState<LoginInputs>({});
   const [output, setOutput] = useState<string>("");
+  const [errors, setErrors] = useState<LoginErrors>({});
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
@@ -90,28 +96,54 @@ export default function Login(props: SetUserProps): JSX.Element {
     <>
       <div className="user">
         <header className="page_header_logo">
-          <h1 className="page_title">Sign In</h1>
+          <h1 className="page_title" id="login-heading">Sign In</h1>
         </header>
-        <form className="Login-form" onSubmit={handleSubmit} noValidate>
+        <form 
+          className="Login-form" 
+          onSubmit={handleSubmit} 
+          noValidate
+          aria-labelledby="login-heading"
+          aria-describedby={output ? "login-error" : undefined}
+        >
           <div className="sign-in-form">
+            <label htmlFor="email-input" className="sr-only">Email Address</label>
             <input
+              id="email-input"
               className="form__input"
               type="email"
               name="email"
               placeholder="Enter your Email"
               value={inputs.email || ""}
               onChange={handleChange}
+              aria-required="true"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
             />
+            {errors.email && (
+              <span id="email-error" className="error-message" role="alert">
+                {errors.email}
+              </span>
+            )}
           </div>
           <div className="sign-in-form">
+            <label htmlFor="password-input" className="sr-only">Password</label>
             <input
+              id="password-input"
               className="form__input"
               type="password"
               name="password"
               placeholder="Enter your password"
               value={inputs.password || ""}
               onChange={handleChange}
+              aria-required="true"
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "password-error" : undefined}
             />
+            {errors.password && (
+              <span id="password-error" className="error-message" role="alert">
+                {errors.password}
+              </span>
+            )}
           </div>
           <div className="buttonbg">
             <input 
@@ -119,6 +151,8 @@ export default function Login(props: SetUserProps): JSX.Element {
               type="submit" 
               disabled={loading}
               value={loading ? "Signing in..." : "Sign In"}
+              aria-label={loading ? "Signing in, please wait" : "Sign in to your account"}
+              aria-busy={loading}
             />
           </div>
           <p className="sign-upmessage">Don't have an account? Sign Up!</p>
@@ -129,8 +163,12 @@ export default function Login(props: SetUserProps): JSX.Element {
             </Button_Register>
           </div>
         </form>
-        <div className="center">
-          <p>{output}</p>
+        <div className="center" role="status" aria-live="polite">
+          {output && (
+            <p id="login-error" role="alert">
+              {output}
+            </p>
+          )}
         </div>
       </div>
     </>

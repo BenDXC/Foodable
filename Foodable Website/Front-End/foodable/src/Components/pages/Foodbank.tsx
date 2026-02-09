@@ -83,6 +83,7 @@ export default function FoodbankPage(): JSX.Element {
 
   return (
     <div className="Foodbank-container">
+      <h1 className="sr-only">Foodbank Locations</h1>
       <Locate panTo={panTo} />
       <Search panTo={panTo} />
 
@@ -342,8 +343,12 @@ function Locate({ panTo }: LocateProps): JSX.Element {
   };
 
   return (
-    <button className="locate" onClick={handleLocate}>
-      <img src="../Img/compass1.svg" alt="Get Location" />
+    <button 
+      className="locate" 
+      onClick={handleLocate}
+      aria-label="Get my current location and show nearby foodbanks"
+    >
+      <img src="../Img/compass1.svg" alt="" aria-hidden="true" />
     </button>
   );
 }
@@ -388,15 +393,20 @@ function Search({ panTo }: SearchProps): JSX.Element {
 
   return (
     <div className="search">
-      <Combobox onSelect={handleSelect}>
+      <Combobox onSelect={handleSelect} aria-label="Search for location">
         <ComboboxInput
           value={value}
           onChange={handleInput}
           disabled={!ready}
           placeholder="Search your location"
+          aria-label="Enter location to search for nearby foodbanks"
+          aria-describedby="search-instructions"
         />
+        <span id="search-instructions" className="sr-only">
+          Type a location to search for nearby foodbanks. Use arrow keys to navigate suggestions.
+        </span>
         <ComboboxPopover>
-          <ComboboxList>
+          <ComboboxList aria-label="Location suggestions">
             {status === "OK" &&
               data.map(({ id, description }) => (
                 <ComboboxOption key={id} value={description} />

@@ -40,26 +40,27 @@ function Rewards(): JSX.Element {
     <>
       {/* Main Content */}
       <div className="page_title">
-        <h1 className="page_title">Foodable Rewards</h1>
+        <h1 className="page_title" id="rewards-heading">Foodable Rewards</h1>
       </div>
       <div className="page_description">
         <h3 className="page_description">
-          {" "}
           At foodable we are all about encouraging others to help, so for each
           donation we provide you with points which you can exchange for various
-          rewards{" "}
+          rewards
         </h3>
       </div>
 
-      <div className="page_points">
-        <h1 className="page_points">Your Points: {userPoints}</h1>
+      <div className="page_points" role="status" aria-live="polite">
+        <h1 className="page_points" aria-label={`You have ${userPoints} reward points`}>
+          Your Points: {userPoints}
+        </h1>
       </div>
 
-      <div className="rewards">
+      <section className="rewards" aria-labelledby="available-rewards-heading">
         <div className="rewards__container">
-          <h1 className="page_points">Rewards available to claim</h1>
+          <h1 className="page_points" id="available-rewards-heading">Rewards available to claim</h1>
           <div className="rewards__wrapper">
-            <ul className="rewards__items">
+            <ul className="rewards__items" role="list" aria-label="Available rewards row 1">
               {rewards.slice(0, 2).map((reward) => (
                 <RewardItem
                   key={reward.id}
@@ -71,7 +72,7 @@ function Rewards(): JSX.Element {
               ))}
             </ul>
 
-            <ul className="rewards__items">
+            <ul className="rewards__items" role="list" aria-label="Available rewards row 2">
               {rewards.slice(2, 4).map((reward) => (
                 <RewardItem
                   key={reward.id}
@@ -83,7 +84,7 @@ function Rewards(): JSX.Element {
               ))}
             </ul>
 
-            <ul className="rewards__items">
+            <ul className="rewards__items" role="list" aria-label="Available rewards row 3">
               {rewards.slice(4, 6).map((reward) => (
                 <RewardItem
                   key={reward.id}
@@ -96,7 +97,7 @@ function Rewards(): JSX.Element {
             </ul>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* End Main Content */}
     </>
