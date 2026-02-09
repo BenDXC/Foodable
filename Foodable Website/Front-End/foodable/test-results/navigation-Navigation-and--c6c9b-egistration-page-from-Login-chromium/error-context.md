@@ -1,0 +1,95 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - navigation [ref=e3]:
+    - generic [ref=e4]:
+      - link [ref=e5] [cursor=pointer]:
+        - /url: /
+        - img [ref=e6]
+      - text: 
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "Home" [ref=e9] [cursor=pointer]:
+            - /url: /
+        - listitem [ref=e10]:
+          - link "About" [ref=e11] [cursor=pointer]:
+            - /url: /About
+        - listitem [ref=e12]:
+          - link "Donator" [ref=e13] [cursor=pointer]:
+            - /url: /Donator
+        - listitem [ref=e14]:
+          - link "Contact" [ref=e15] [cursor=pointer]:
+            - /url: /Contact
+        - listitem [ref=e16]
+        - listitem [ref=e17]
+      - link "Login" [ref=e18] [cursor=pointer]:
+        - /url: /Login
+        - button "Login" [ref=e19]
+  - generic [ref=e20]:
+    - banner [ref=e21]:
+      - heading "Sign In" [level=1] [ref=e22]
+    - generic [ref=e23]:
+      - textbox "Enter your Email" [ref=e25]
+      - textbox "Enter your password" [ref=e27]
+      - button "Submit" [ref=e29] [cursor=pointer]
+      - paragraph [ref=e30]: Don't have an account? Sign Up!
+      - link "Sign Up" [ref=e32] [cursor=pointer]:
+        - /url: /Registration
+        - button "Sign Up" [ref=e33]
+    - generic [ref=e34]:
+      - paragraph
+  - generic [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - heading "About Us" [level=2] [ref=e39]
+          - link "About Us" [ref=e40] [cursor=pointer]:
+            - /url: /About
+          - link "How it works" [ref=e41] [cursor=pointer]:
+            - /url: /About
+          - link "Terms of Service" [ref=e42] [cursor=pointer]:
+            - /url: /About
+        - generic [ref=e43]:
+          - heading "Contact Us" [level=2] [ref=e44]
+          - link "Contact" [ref=e45] [cursor=pointer]:
+            - /url: /Contact
+          - link "Support" [ref=e46] [cursor=pointer]:
+            - /url: /Contact
+          - link "Send A Message" [ref=e47] [cursor=pointer]:
+            - /url: /Contact
+          - link "Offline Maps" [ref=e48] [cursor=pointer]:
+            - /url: /Contact
+      - generic [ref=e49]:
+        - generic [ref=e50]:
+          - heading "Online Services" [level=2] [ref=e51]
+          - link "Donate Food" [ref=e52] [cursor=pointer]:
+            - /url: /Donator
+          - link "What you can donate" [ref=e53] [cursor=pointer]:
+            - /url: /Donator
+          - link "Receive Food" [ref=e54] [cursor=pointer]:
+            - /url: /Receiver
+        - generic [ref=e55]:
+          - heading "Donator Rewards" [level=2] [ref=e56]
+          - link "Find Rewards" [ref=e57] [cursor=pointer]:
+            - /url: /Reward
+          - link "Get Rewards" [ref=e58] [cursor=pointer]:
+            - /url: /Reward
+          - link "Claim Rewards" [ref=e59] [cursor=pointer]:
+            - /url: /Reward
+    - generic [ref=e61] [cursor=pointer]:
+      - link [ref=e63]:
+        - /url: /
+        - img [ref=e64]
+      - paragraph [ref=e65]: Foodable © | All Rights Reserved
+      - generic [ref=e66]:
+        - link "Facebook" [ref=e67]:
+          - /url: /
+          - generic [ref=e68]: 
+        - link "Instagram" [ref=e69]:
+          - /url: /
+          - generic [ref=e70]: 
+        - link "Youtube" [ref=e71]:
+          - /url: /
+          - generic [ref=e72]: 
+```
