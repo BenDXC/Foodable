@@ -2,7 +2,7 @@ import React from "react";
 import "./Footer.css";
 import { Link } from "react-router-dom";
 
-function Footer() {
+const Footer: React.FC = (): JSX.Element => {
   return (
     <div className="footer-container">
       <div class="footer-links">

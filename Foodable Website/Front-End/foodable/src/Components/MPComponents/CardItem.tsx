@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { CardItemProps } from "../../types";
 
-function CardItem(props) {
+const CardItem: React.FC<CardItemProps> = (props): JSX.Element => {
   return (
     <>
       <li className="cards__item">

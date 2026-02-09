@@ -177,7 +177,7 @@ describe('Login Component', () => {
       expect(mockSetLoggedinUser).toHaveBeenCalledWith('');
     });
 
-    it('handles empty JWT token by still setting user', async () => {
+    it('handles empty JWT token by clearing user', async () => {
       const user = userEvent.setup();
       const mockResponse = {
         status: 200,
@@ -200,8 +200,8 @@ describe('Login Component', () => {
       await user.click(submitButton);
       
       await waitFor(() => {
-        // Empty string is still set as the jwt token
-        expect(mockSetLoggedinUser).toHaveBeenCalledWith('test@example.com');
+        // When JWT token is empty, user should not be set
+        expect(mockSetLoggedinUser).toHaveBeenCalledWith('');
       });
     });
   });

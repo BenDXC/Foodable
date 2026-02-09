@@ -1,28 +1,27 @@
 import emailjs from "@emailjs/browser";
-import React from "react";
+import React, { FormEvent } from "react";
 import "./cssFiles/Contact.css";
 
-export default function ContactUs() {
-  function sendEmail(e) {
+export default function ContactUs(): JSX.Element {
+  const sendEmail = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
-    emailjs
-      .sendForm(
+    try {
+      const result = await emailjs.sendForm(
         "gmail",
         "Automated_Email",
-        e.target,
+        e.currentTarget,
         "user_mlsqPrWKZea6YAr2udP9X"
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-        },
-        (error) => {
-          console.log(error.text);
-        }
       );
-    e.target.reset();
-  }
+      console.log(result.text);
+    } catch (error: any) {
+      console.log(error.text);
+    }
+    
+    if (e.currentTarget) {
+      e.currentTarget.reset();
+    }
+  };
 
   return (
     <div className="container">

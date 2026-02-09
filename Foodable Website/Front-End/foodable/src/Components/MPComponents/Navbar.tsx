@@ -1,54 +1,61 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./Button";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import "./Navbar.css";
+import { NavbarProps, UserData } from "../../types";
 
-export default function Navbar(props) {
-  const loggedInUser = props.loggedInUser;
-  const [userdata, setUserdata] = useState("");
+export default function Navbar(props: NavbarProps): JSX.Element {
+  const loggedInUser = props.loggedInUser || "";
+  const [userdata, setUserdata] = useState<string>("");
 
   useEffect(() => {
-    if (loggedInUser !== "") {
-      const jwt = sessionStorage.getItem("jwt");
-      console.log(jwt);
+    const fetchUserData = async (): Promise<void> => {
+      if (loggedInUser !== "") {
+        const jwt = sessionStorage.getItem("jwt");
+        console.log(jwt);
 
-      axios({
-        method: "get",
-        url: "/user",
-        params: { email: loggedInUser },
-        headers: { Authorization: `Bearer ${jwt}` },
-      })
-        .then((response) => {
+        try {
+          const response = await axios({
+            method: "get",
+            url: "/user",
+            params: { email: loggedInUser },
+            headers: { Authorization: `Bearer ${jwt}` },
+          });
+          
           console.log(response);
           if (response.status === 200) {
-            if (response.data.addresses)
+            if (response.data.addresses) {
               setUserdata(JSON.stringify(response.data.addresses[0]));
+            }
           }
-        })
-        .catch((err) => {
-          console.log(err.response);
+        } catch (err) {
+          const error = err as AxiosError;
+          console.log(error.response);
           setUserdata("Data failure");
-        });
-    }
+        }
+      }
+    };
+
+    fetchUserData();
   }, [loggedInUser]);
 
   console.log(loggedInUser);
   if (loggedInUser === "") {
-    return NavbarD();
+    return <NavbarD />;
   } else {
-    return NavbarR();
+    return <NavbarR />;
   }
 }
 
-function NavbarR() {
-  const [click, SetClick] = useState(false);
-  const [button, setButton] = useState(true);
-  const handleClick = () => SetClick(!click);
-  const closeMobileMenu = () => SetClick(false);
+function NavbarR(): JSX.Element {
+  const [click, SetClick] = useState<boolean>(false);
+  const [button, setButton] = useState<boolean>(true);
+  const handleClick = (): void => SetClick(!click);
+  const closeMobileMenu = (): void => SetClick(false);
 
-  const showButton = () => {
-    if (Window.innerWidth <= 960) {
+  const showButton = (): void => {
+    if (window.innerWidth <= 960) {
       setButton(false);
     } else {
       setButton(true);
@@ -124,14 +131,14 @@ function NavbarR() {
     </>
   );
 }
-function NavbarD() {
-  const [click, SetClick] = useState(false);
-  const [button, setButton] = useState(true);
-  const handleClick = () => SetClick(!click);
-  const closeMobileMenu = () => SetClick(false);
+function NavbarD(): JSX.Element {
+  const [click, SetClick] = useState<boolean>(false);
+  const [button, setButton] = useState<boolean>(true);
+  const handleClick = (): void => SetClick(!click);
+  const closeMobileMenu = (): void => SetClick(false);
 
-  const showButton = () => {
-    if (Window.innerWidth <= 960) {
+  const showButton = (): void => {
+    if (window.innerWidth <= 960) {
       setButton(false);
     } else {
       setButton(true);

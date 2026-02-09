@@ -1,23 +1,25 @@
 import React from "react";
 import "./Button.css";
 import { Link } from "react-router-dom";
+import { ButtonProps } from "../../types";
 
-const STYLES = ["btn--primary", "btn--outline", "btn--test"];
+const STYLES: string[] = ["btn--primary", "btn--outline", "btn--test"];
+const SIZES: string[] = ["btn--medium", "btn--large"];
 
-const SIZES = ["btn--medium", "btn--large"];
-
-export const Button = ({
+export const Button: React.FC<ButtonProps> = ({
   children,
   type,
   onClick,
   buttonStyle,
   buttonSize,
-}) => {
-  const checkButtonStyle = STYLES.includes(buttonStyle)
+}): JSX.Element => {
+  const checkButtonStyle = buttonStyle && STYLES.includes(buttonStyle)
     ? buttonStyle
     : STYLES[0];
 
-  const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+  const checkButtonSize = buttonSize && SIZES.includes(buttonSize) 
+    ? buttonSize 
+    : SIZES[0];
 
   return (
     <>
@@ -34,18 +36,20 @@ export const Button = ({
   );
 };
 
-export const Button_D = ({
+export const Button_D: React.FC<ButtonProps> = ({
   children,
   type,
   onClick,
   buttonStyle,
   buttonSize,
-}) => {
-  const checkButtonStyle = STYLES.includes(buttonStyle)
+}): JSX.Element => {
+  const checkButtonStyle = buttonStyle && STYLES.includes(buttonStyle)
     ? buttonStyle
     : STYLES[0];
 
-  const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+  const checkButtonSize = buttonSize && SIZES.includes(buttonSize) 
+    ? buttonSize 
+    : SIZES[0];
 
   return (
     <>
@@ -62,18 +66,20 @@ export const Button_D = ({
   );
 };
 
-export const Button_Receiver = ({
+export const Button_Receiver: React.FC<ButtonProps> = ({
   children,
   type,
   onClick,
   buttonStyle,
   buttonSize,
-}) => {
-  const checkButtonStyle = STYLES.includes(buttonStyle)
+}): JSX.Element => {
+  const checkButtonStyle = buttonStyle && STYLES.includes(buttonStyle)
     ? buttonStyle
     : STYLES[0];
 
-  const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+  const checkButtonSize = buttonSize && SIZES.includes(buttonSize) 
+    ? buttonSize 
+    : SIZES[0];
 
   return (
     <>
@@ -90,18 +96,20 @@ export const Button_Receiver = ({
   );
 };
 
-export const Button_Register = ({
+export const Button_Register: React.FC<ButtonProps> = ({
   children,
   type,
   onClick,
   buttonStyle,
   buttonSize,
-}) => {
-  const checkButtonStyle = STYLES.includes(buttonStyle)
+}): JSX.Element => {
+  const checkButtonStyle = buttonStyle && STYLES.includes(buttonStyle)
     ? buttonStyle
     : STYLES[0];
 
-  const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+  const checkButtonSize = buttonSize && SIZES.includes(buttonSize) 
+    ? buttonSize 
+    : SIZES[0];
 
   return (
     <>
@@ -117,18 +125,21 @@ export const Button_Register = ({
     </>
   );
 };
-export const Button_Foodbank = ({
+
+export const Button_Foodbank: React.FC<ButtonProps> = ({
   children,
   type,
   onClick,
   buttonStyle,
   buttonSize,
-}) => {
-  const checkButtonStyle = STYLES.includes(buttonStyle)
+}): JSX.Element => {
+  const checkButtonStyle = buttonStyle && STYLES.includes(buttonStyle)
     ? buttonStyle
     : STYLES[0];
 
-  const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+  const checkButtonSize = buttonSize && SIZES.includes(buttonSize) 
+    ? buttonSize 
+    : SIZES[0];
 
   return (
     <>
@@ -145,12 +156,19 @@ export const Button_Foodbank = ({
   );
 };
 
-export const Button_Verify = ({ children, type, buttonStyle, buttonSize }) => {
-  const checkButtonStyle = STYLES.includes(buttonStyle)
+export const Button_Verify: React.FC<ButtonProps> = ({ 
+  children, 
+  type, 
+  buttonStyle, 
+  buttonSize 
+}): JSX.Element => {
+  const checkButtonStyle = buttonStyle && STYLES.includes(buttonStyle)
     ? buttonStyle
     : STYLES[0];
 
-  const checkButtonSize = SIZES.includes(buttonSize) ? buttonSize : SIZES[0];
+  const checkButtonSize = buttonSize && SIZES.includes(buttonSize) 
+    ? buttonSize 
+    : SIZES[0];
 
   return (
     <>
@@ -164,8 +182,9 @@ export const Button_Verify = ({ children, type, buttonStyle, buttonSize }) => {
     </>
   );
 };
-function Generate() {
-  let numbers = "1234567890";
+
+function Generate(): void {
+  const numbers = "1234567890";
   let OTP = "";
   for (let i = 0; i < 8; i++) {
     OTP += numbers[Math.floor(Math.random() * 10)];

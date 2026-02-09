@@ -14,11 +14,12 @@ import Login from "./Components/pages/Login";
 import Registration from "./Components/pages/Registration";
 import Foodbank from "./Components/pages/Foodbank";
 
-export default function App() {
-  const [loggedInUser, setLoggedinUser] = useState("");
+export default function App(): JSX.Element {
+  const [loggedInUser, setLoggedinUser] = useState<string>("");
+  
   return (
     <BrowserRouter>
-      <Navbar />
+      <Navbar loggedInUser={loggedInUser} />
       <Routes>
         <Route path="/" element={<Home loggedInUser={loggedInUser} />} />
         <Route path="/About" element={<About />} />

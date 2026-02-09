@@ -1,7 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { CardItemProps } from "../../types";
 
-export default function RewardItem(props) {
+export default function RewardItem(props: CardItemProps): JSX.Element {
   return (
     <>
       <li className="rewards__item">

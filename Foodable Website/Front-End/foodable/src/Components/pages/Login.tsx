@@ -1,22 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, ChangeEvent, FormEvent } from "react";
 import "./cssFiles/Login.css";
 import { Button_Register } from "../MPComponents/Button";
-import axios from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
+import { SetUserProps, LoginData } from "../../types";
 
-export default function Login(props) {
-  const [inputs, setInput] = useState({});
-  const [output, setOutput] = useState("");
+interface LoginInputs {
+  email?: string;
+  password?: string;
+}
 
-  const handleChange = (event) => {
+interface LoginResponse {
+  token?: string;
+  message?: string;
+}
+
+export default function Login(props: SetUserProps): JSX.Element {
+  const [inputs, setInput] = useState<LoginInputs>({});
+  const [output, setOutput] = useState<string>("");
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const target = event.target;
     const value = target.value;
     const name = target.name;
     setInput((values) => ({ ...values, [name]: value }));
   };
 
-  const validateForm = () => {
-    var mailformat = /\S+@\S+\.\S+/;
-    var valid = false;
+  const validateForm = (): boolean => {
+    const mailformat = /\S+@\S+\.\S+/;
+    let valid = false;
     if (!inputs.email || !inputs.password) {
       setOutput("Validation failure: Please fill in all text fields.");
     } else if (!mailformat.test(inputs.email)) {
@@ -33,42 +44,46 @@ export default function Login(props) {
     return valid;
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
-    const dataLogin = { email: inputs.email, password: inputs.password };
+    const dataLogin: LoginData = { 
+      email: inputs.email || "", 
+      password: inputs.password || "" 
+    };
 
     console.log(dataLogin);
 
     if (validateForm()) {
-      axios({
-        method: "post",
-        url: "http://localhost:8080/signin",
-        data: dataLogin,
-      })
-        .then((response) => {
-          console.log(response);
-          if (response.status === 200) {
-            setOutput("Login success");
-            const jwtToken = response.headers.authorization.split(" ")[1];
-            if (jwtToken !== null) {
-              sessionStorage.setItem("jwt", jwtToken);
-              console.log(jwtToken);
-              props.setLoggedinUser(inputs.email);
-            } else {
-              setOutput("Token failure");
-              props.setLoggedinUser("");
-            }
+      try {
+        const response: AxiosResponse<LoginResponse> = await axios({
+          method: "post",
+          url: "http://localhost:8080/signin",
+          data: dataLogin,
+        });
+
+        console.log(response);
+        if (response.status === 200) {
+          setOutput("Login success");
+          const jwtToken = response.headers.authorization?.split(" ")[1];
+          if (jwtToken) {
+            sessionStorage.setItem("jwt", jwtToken);
+            console.log(jwtToken);
+            props.setLoggedinUser(inputs.email || "");
           } else {
-            setOutput("Login failure");
+            setOutput("Token failure");
             props.setLoggedinUser("");
           }
-        })
-        .catch((err) => {
-          console.log(err.response);
+        } else {
           setOutput("Login failure");
           props.setLoggedinUser("");
-        });
+        }
+      } catch (err) {
+        const error = err as AxiosError;
+        console.log(error.response);
+        setOutput("Login failure");
+        props.setLoggedinUser("");
+      }
     }
   };
 

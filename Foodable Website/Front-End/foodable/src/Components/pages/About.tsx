@@ -1,7 +1,8 @@
 import React from "react";
 import Cards from "../MPComponents/Cards";
 import { Button_Foodbank, Button_Receiver } from "../MPComponents/Button";
-export default function About() {
+
+export default function About(): JSX.Element {
   return (
     <>
       {/* Main Content */}

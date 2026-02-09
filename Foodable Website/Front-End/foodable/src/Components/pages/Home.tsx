@@ -1,46 +1,54 @@
 import React, { useState, useEffect } from "react";
 import "./cssFiles/Home.css";
 import { Button_Foodbank } from "../MPComponents/Button";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import About from "./About";
+import { UserProps, UserData } from "../../types";
 
-function Home(props) {
+function Home(props: UserProps): JSX.Element {
   const loggedInUser = props.loggedInUser;
-  const [userdata, setUserdata] = useState("");
+  const [userdata, setUserdata] = useState<string>("");
 
   useEffect(() => {
-    if (loggedInUser !== "") {
-      const jwt = sessionStorage.getItem("jwt");
-      console.log(jwt);
+    const fetchUserData = async (): Promise<void> => {
+      if (loggedInUser !== "") {
+        const jwt = sessionStorage.getItem("jwt");
+        console.log(jwt);
 
-      axios({
-        method: "get",
-        url: "/user",
-        params: { email: loggedInUser },
-        headers: { Authorization: `Bearer ${jwt}` },
-      })
-        .then((response) => {
+        try {
+          const response = await axios<UserData>({
+            method: "get",
+            url: "/user",
+            params: { email: loggedInUser },
+            headers: { Authorization: `Bearer ${jwt}` },
+          });
+
           console.log(response);
           if (response.status === 200) {
-            if (response.data.addresses)
+            if (response.data.addresses) {
               setUserdata(JSON.stringify(response.data.addresses[0]));
+            }
           }
-        })
-        .catch((err) => {
-          console.log(err.response);
+        } catch (err) {
+          const error = err as AxiosError;
+          console.log(error.response);
           setUserdata("Data failure");
-        });
-    }
+        }
+      }
+    };
+
+    fetchUserData();
   }, [loggedInUser]);
 
   console.log(loggedInUser);
   if (loggedInUser === "") {
     return <About />;
   } else {
-    return WelcomePage();
+    return <WelcomePage />;
   }
 }
-function WelcomePage() {
+
+function WelcomePage(): JSX.Element {
   return (
     <>
       {/* Main Content */}

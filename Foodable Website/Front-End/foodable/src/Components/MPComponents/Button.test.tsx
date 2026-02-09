@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
+import type { ReactElement } from 'react';
 import {
   Button,
   Button_D,
@@ -12,38 +13,53 @@ import {
 } from './Button';
 
 // Helper to render with Router
-const renderWithRouter = (component) => {
+const renderWithRouter = (component: ReactElement) => {
   return render(<BrowserRouter>{component}</BrowserRouter>);
 };
 
 describe('Button Component', () => {
-  it('renders button with children text', () => {
-    renderWithRouter(<Button>Login</Button>);
-    expect(screen.getByRole('button')).toHaveTextContent('Login');
+  it('renders button with children text', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button>Login</Button>);
+      expect(screen.getByRole('button')).toHaveTextContent('Login');
+      resolve();
+    });
   });
 
-  it('applies default style when invalid buttonStyle is provided', () => {
-    renderWithRouter(<Button buttonStyle="invalid-style">Test</Button>);
-    const button = screen.getByRole('button');
-    expect(button.className).toContain('btn--primary');
+  it('applies default style when invalid buttonStyle is provided', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button buttonStyle="invalid-style">Test</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('btn--primary');
+      resolve();
+    });
   });
 
-  it('applies correct style when valid buttonStyle is provided', () => {
-    renderWithRouter(<Button buttonStyle="btn--outline">Test</Button>);
-    const button = screen.getByRole('button');
-    expect(button.className).toContain('btn--outline');
+  it('applies correct style when valid buttonStyle is provided', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button buttonStyle="btn--outline">Test</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('btn--outline');
+      resolve();
+    });
   });
 
-  it('applies default size when invalid buttonSize is provided', () => {
-    renderWithRouter(<Button buttonSize="invalid-size">Test</Button>);
-    const button = screen.getByRole('button');
-    expect(button.className).toContain('btn--medium');
+  it('applies default size when invalid buttonSize is provided', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button buttonSize="invalid-size">Test</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('btn--medium');
+      resolve();
+    });
   });
 
-  it('applies correct size when valid buttonSize is provided', () => {
-    renderWithRouter(<Button buttonSize="btn--large">Test</Button>);
-    const button = screen.getByRole('button');
-    expect(button.className).toContain('btn--large');
+  it('applies correct size when valid buttonSize is provided', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button buttonSize="btn--large">Test</Button>);
+      const button = screen.getByRole('button');
+      expect(button.className).toContain('btn--large');
+      resolve();
+    });
   });
 
   it('calls onClick handler when clicked', async () => {
@@ -52,19 +68,28 @@ describe('Button Component', () => {
     renderWithRouter(<Button onClick={handleClick}>Click Me</Button>);
     
     await user.click(screen.getByRole('button'));
-    expect(handleClick).toHaveBeenCalledTimes(1);
+    await new Promise<void>((resolve) => {
+      expect(handleClick).toHaveBeenCalledTimes(1);
+      resolve();
+    });
   });
 
-  it('sets correct button type', () => {
-    renderWithRouter(<Button type="submit">Submit</Button>);
-    const button = screen.getByRole('button');
-    expect(button.type).toBe('submit');
+  it('sets correct button type', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button type="submit">Submit</Button>);
+      const button = screen.getByRole('button') as HTMLButtonElement;
+      expect(button.type).toBe('submit');
+      resolve();
+    });
   });
 
-  it('links to /Login route', () => {
-    renderWithRouter(<Button>Login</Button>);
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/Login');
+  it('links to /Login route', async () => {
+    await new Promise<void>((resolve) => {
+      renderWithRouter(<Button>Login</Button>);
+      const link = screen.getByRole('link');
+      expect(link).toHaveAttribute('href', '/Login');
+      resolve();
+    });
   });
 });
 

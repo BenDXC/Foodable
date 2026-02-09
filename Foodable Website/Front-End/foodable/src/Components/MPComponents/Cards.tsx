@@ -2,7 +2,7 @@ import React from "react";
 import "./Cards.css";
 import CardItem from "./CardItem";
 
-function Cards() {
+const Cards: React.FC = (): JSX.Element => {
   return (
     <div className="cards">
       <h1>Check out the features of our Website!</h1>
