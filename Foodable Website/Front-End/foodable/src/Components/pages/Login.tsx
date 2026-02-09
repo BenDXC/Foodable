@@ -56,9 +56,10 @@ export default function Login(props: SetUserProps): JSX.Element {
 
     if (validateForm()) {
       try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
         const response: AxiosResponse<LoginResponse> = await axios({
           method: "post",
-          url: "http://localhost:8080/signin",
+          url: `${apiBaseUrl}/signin`,
           data: dataLogin,
         });
 

@@ -39,11 +39,11 @@ const center = {
 
 export default function App() {
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyDWY-Raf2RbTot-5OyNG_ZDm_T0aaaq8QA",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
     libraries,
   });
   const [markers, setMarkers] = React.useState([]);
-  const [setSelected] = React.useState(null);
+  const [selected, setSelected] = React.useState(null);
   const onMapClick = React.useCallback((e) => {
     setMarkers((current) => [
       ...current,
@@ -97,7 +97,6 @@ export default function App() {
             }}
           />
         ))}
-        ))
         <Marker
           position={{ lat: 51.53221, lng: -0.48481 }}
           icon={{
@@ -131,7 +130,6 @@ export default function App() {
  
             </div>
           </InfoWindow> */}
-        ))
         <Marker
           position={{ lat: 51.55192, lng: -0.48669 }}
           icon={{
@@ -271,8 +269,7 @@ export default function App() {
 
 
           </div>
-        </InfoWindow>
- */}
+        </InfoWindow> */}
       </GoogleMap>
 
       <div className="Info-box-6">

@@ -1,77 +1,94 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, ChangeEvent, FormEvent } from "react";
+import axios, { AxiosError } from "axios";
 import { Button } from "../MPComponents/Button";
 import "./cssFiles/Register.css";
+import { VALIDATION, ERROR_MESSAGES } from "../../constants";
+import logger from "../../utils/logger";
 
-function Registration() {
-  const [inputs, setInput] = useState({});
-  const [output, setOutput] = useState("");
+interface RegistrationInputs {
+  username?: string;
+  email?: string;
+  password?: string;
+  repPassword?: string;
+  tos?: boolean;
+}
 
-  const handleChange = (event) => {
+interface RegistrationData {
+  username: string;
+  email: string;
+  password: string;
+}
+
+function Registration(): JSX.Element {
+  const [inputs, setInput] = useState<RegistrationInputs>({});
+  const [output, setOutput] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const target = event.target;
     const value = target.type === "checkbox" ? target.checked : target.value;
     const name = target.name;
     setInput((values) => ({ ...values, [name]: value }));
   };
 
-  const validateForm = () => {
-    console.log(inputs);
-    var mailformat = /\S+@\S+\.\S+/;
-    var valid = false;
+  const validateForm = (): boolean => {
+    logger.debug('Validating registration form', inputs);
+    
+    let valid = false;
     if (
       !inputs.username ||
       !inputs.email ||
       !inputs.password ||
       !inputs.repPassword
     ) {
-      setOutput("Validation failure: Please fill in all text fields.");
-    } else if (inputs.username.length > 50) {
-      setOutput(
-        "Validation  failure: Username cannot be longer than 50 characters"
-      );
-    } else if (!mailformat.test(inputs.email)) {
-      setOutput(
-        "Validation failure: Invalid e-mail address. Please enter your e-mail again."
-      );
-    } else if (inputs.password.length < 8) {
-      setOutput(
-        "Validation failure: Password is too short. Please select another password"
-      );
+      setOutput(ERROR_MESSAGES.REQUIRED_FIELDS);
+    } else if (inputs.username.length > VALIDATION.MAX_USERNAME_LENGTH) {
+      setOutput(ERROR_MESSAGES.USERNAME_TOO_LONG);
+    } else if (!VALIDATION.EMAIL_REGEX.test(inputs.email)) {
+      setOutput(ERROR_MESSAGES.INVALID_EMAIL);
+    } else if (inputs.password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
+      setOutput(ERROR_MESSAGES.PASSWORD_TOO_SHORT);
     } else if (inputs.password !== inputs.repPassword) {
-      setOutput("Validation failure: Passwords do not match. Please retry");
+      setOutput(ERROR_MESSAGES.PASSWORDS_MISMATCH);
     } else if (!inputs.tos) {
-      setOutput(
-        "Validation failure: Please agree to the Terms and Conditions, and Privacy Policy."
-      );
+      setOutput(ERROR_MESSAGES.TOS_NOT_ACCEPTED);
     } else {
       valid = true;
     }
     return valid;
   };
-  const handleSubmit = (event) => {
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
-    const dataRegistration = (({ username, email, password }) => ({
-      username,
-      email,
-      password,
-    }))(inputs);
+    const dataRegistration: RegistrationData = {
+      username: inputs.username || "",
+      email: inputs.email || "",
+      password: inputs.password || "",
+    };
 
     if (validateForm()) {
-      axios({
-        method: "POST",
-        url: "http://localhost:8080/signup",
-        data: dataRegistration,
-      })
-        .then((response) => {
-          console.log(response);
-          setOutput(
-            response.status === 201
-              ? `Registration success: ${dataRegistration["username"]}`
-              : "Registration failure"
-          );
-        })
-        .catch((err) => console.log(err));
+      setLoading(true);
+      try {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+        const response = await axios.post(
+          `${apiBaseUrl}/signup`,
+          dataRegistration
+        );
+        
+        logger.debug('Registration response', response);
+        setOutput(
+          response.status === 201
+            ? `Registration success: ${dataRegistration.username}`
+            : ERROR_MESSAGES.REGISTRATION_FAILURE
+        );
+      } catch (err) {
+        const error = err as AxiosError;
+        logger.error('Registration failed', error);
+        setOutput(ERROR_MESSAGES.REGISTRATION_FAILURE);
+      } finally {
+        setLoading(false);
+      }
     }
   };
   return (
@@ -153,7 +170,12 @@ function Registration() {
           </label>
         </div>
         <div className="buttonbg">
-          <input className="regbut" type="submit" />
+          <input 
+            className="regbut" 
+            type="submit" 
+            disabled={loading}
+            value={loading ? "Registering..." : "Register"}
+          />
         </div>
         <p className="sign-inmessage">Or if you have an account</p>
         <div className="signinbut">

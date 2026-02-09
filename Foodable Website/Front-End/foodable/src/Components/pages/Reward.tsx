@@ -41,11 +41,11 @@ function Rewards() {
   return (
     <>
       {/* Main Content */}
-      <div class="page_title">
-        <h1 class="page_title">Foodable Rewards</h1>
+      <div className="page_title">
+        <h1 className="page_title">Foodable Rewards</h1>
       </div>
-      <div class="page_description">
-        <h3 class="page_description">
+      <div className="page_description">
+        <h3 className="page_description">
           {" "}
           At foodable we are all about encouraging others to help, so for each
           donation we provide you with points which you can exchange for various
@@ -53,8 +53,8 @@ function Rewards() {
         </h3>
       </div>
 
-      <div class="page_points">
-        <h1 class="page_points">Your Points:</h1>
+      <div className="page_points">
+        <h1 className="page_points">Your Points:</h1>
       </div>
 
       <div className="rewards">

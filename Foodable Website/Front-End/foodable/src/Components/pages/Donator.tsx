@@ -50,7 +50,7 @@ function CreateDonation() {
               name="Item Name"
               id="txt"
               className="nameinput"
-              required="P"
+              required
             />
             <h2 className="itemquantity">Item quantity</h2>
             <input
@@ -60,43 +60,44 @@ function CreateDonation() {
               className="itemq"
               min={1}
               max={100}
-              required="P"
+              required
             />
             <h2 className="dtitle">Select dietary preference</h2>
             <input
               type="radio"
               name="Dietary Preference"
-              id="dPref"
-              required="P"
+              id="dietary-halal"
+              value="halal"
+              required
             />
-            <label htmlFor="Dietary"> Halal</label>
+            <label htmlFor="dietary-halal"> Halal</label>
             <br />
             <input
               type="radio"
               name="Dietary Preference"
-              id="dPref"
-              required="P"
+              id="dietary-non-halal"
+              value="non-halal"
             />
-            <label htmlFor="Dietary"> Non-Halal</label>
+            <label htmlFor="dietary-non-halal"> Non-Halal</label>
             <br />
             <input
               type="radio"
               name="Dietary Preference"
-              id="dPref"
-              required="P"
+              id="dietary-vegan"
+              value="vegan"
             />
-            <label htmlFor="Dietary"> Vegan</label>
+            <label htmlFor="dietary-vegan"> Vegan</label>
             <br />
             <input
               type="radio"
               name="Dietary Preference"
-              id="dPref"
-              required="P"
+              id="dietary-vegetarian"
+              value="vegetarian"
             />
-            <label htmlFor="Dietary"> Vegetarian</label>
+            <label htmlFor="dietary-vegetarian"> Vegetarian</label>
             <br />
             <h2 className="extitle">Expiry date</h2>
-            <input type="date" name="bbd" id="Expiry" required="A" />
+            <input type="date" name="bbd" id="Expiry" required />
             <h2 className="imagetitle">Upload image</h2>
             <input
               type="file"
