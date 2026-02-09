@@ -6,7 +6,14 @@ import {
   deleteAccount,
   getAllUsers,
 } from '../controllers/user.controller';
-import { updateProfileValidation, validate } from '../middleware/validation';
+import {
+  updateProfileValidation,
+  validate,
+  idParamValidation,
+  emailQueryValidation,
+  paginationValidation,
+  hasUpdateFields,
+} from '../middleware/validation';
 import { authenticate } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 
@@ -20,6 +27,8 @@ const router = Router();
 router.get(
   '/',
   authenticate,
+  paginationValidation,
+  validate,
   asyncHandler(getAllUsers)
 );
 
@@ -31,6 +40,8 @@ router.get(
 router.get(
   '/email',
   authenticate,
+  emailQueryValidation,
+  validate,
   asyncHandler(getUserByEmail)
 );
 
@@ -42,6 +53,8 @@ router.get(
 router.get(
   '/:id',
   authenticate,
+  idParamValidation,
+  validate,
   asyncHandler(getUserById)
 );
 
@@ -55,6 +68,7 @@ router.put(
   authenticate,
   updateProfileValidation,
   validate,
+  hasUpdateFields,
   asyncHandler(updateProfile)
 );
 

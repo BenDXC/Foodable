@@ -115,6 +115,7 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const logData = {
+      requestId: req.requestId,
       method: req.method,
       url: req.originalUrl,
       statusCode: res.statusCode,
@@ -125,6 +126,8 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
 
     if (res.statusCode >= 400) {
       logWarn('HTTP Request completed with error', logData);
+    } else {
+      logInfo('HTTP Request completed', logData);
     }
   });
 

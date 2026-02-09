@@ -4,6 +4,7 @@ import { config } from '../config';
 import { AuthRequest, JwtPayload } from '../types';
 import { UnauthorizedError, ForbiddenError } from './errorHandler';
 import { logDebug } from '../utils/logger';
+import { ERROR_MESSAGES } from '../utils/constants';
 
 /**
  * Generate JWT access token
@@ -31,9 +32,9 @@ export const verifyAccessToken = (token: string): JwtPayload => {
     return jwt.verify(token, config.JWT_SECRET) as JwtPayload;
   } catch (error: any) {
     if (error.name === 'TokenExpiredError') {
-      throw new UnauthorizedError('Token has expired');
+      throw new UnauthorizedError(ERROR_MESSAGES.TOKEN_EXPIRED);
     }
-    throw new UnauthorizedError('Invalid token');
+    throw new UnauthorizedError(ERROR_MESSAGES.TOKEN_INVALID);
   }
 };
 
@@ -45,9 +46,9 @@ export const verifyRefreshToken = (token: string): JwtPayload => {
     return jwt.verify(token, config.JWT_REFRESH_SECRET) as JwtPayload;
   } catch (error: any) {
     if (error.name === 'TokenExpiredError') {
-      throw new UnauthorizedError('Refresh token has expired');
+      throw new UnauthorizedError('Refresh token has expired. Please log in again.');
     }
-    throw new UnauthorizedError('Invalid refresh token');
+    throw new UnauthorizedError('Invalid refresh token. Please log in again.');
   }
 };
 
@@ -82,7 +83,7 @@ export const authenticate = async (
     const token = extractToken(req);
 
     if (!token) {
-      throw new UnauthorizedError('No authentication token provided');
+      throw new UnauthorizedError(ERROR_MESSAGES.TOKEN_MISSING);
     }
 
     // Verify token
@@ -91,7 +92,11 @@ export const authenticate = async (
     // Attach user info to request
     req.user = decoded;
 
-    logDebug('User authenticated', { userId: decoded.userId, email: decoded.email });
+    logDebug('User authenticated', { 
+      userId: decoded.userId, 
+      email: decoded.email,
+      requestId: req.requestId,
+    });
 
     next();
   } catch (error) {

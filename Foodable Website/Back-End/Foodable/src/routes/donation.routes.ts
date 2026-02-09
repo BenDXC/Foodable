@@ -7,7 +7,14 @@ import {
   updateDonation,
   deleteDonation,
 } from '../controllers/donation.controller';
-import { donationValidation, validate } from '../middleware/validation';
+import {
+  donationValidation,
+  validate,
+  idParamValidation,
+  paginationValidation,
+  statusQueryValidation,
+  hasUpdateFields,
+} from '../middleware/validation';
 import { authenticate } from '../middleware/auth';
 import { asyncHandler } from '../middleware/errorHandler';
 
@@ -34,6 +41,9 @@ router.post(
 router.get(
   '/',
   authenticate,
+  paginationValidation,
+  statusQueryValidation,
+  validate,
   asyncHandler(getAllDonations)
 );
 
@@ -45,6 +55,8 @@ router.get(
 router.get(
   '/my-donations',
   authenticate,
+  paginationValidation,
+  validate,
   asyncHandler(getUserDonations)
 );
 
@@ -56,6 +68,8 @@ router.get(
 router.get(
   '/:id',
   authenticate,
+  idParamValidation,
+  validate,
   asyncHandler(getDonationById)
 );
 
@@ -67,6 +81,9 @@ router.get(
 router.put(
   '/:id',
   authenticate,
+  idParamValidation,
+  validate,
+  hasUpdateFields,
   asyncHandler(updateDonation)
 );
 
@@ -78,6 +95,8 @@ router.put(
 router.delete(
   '/:id',
   authenticate,
+  idParamValidation,
+  validate,
   asyncHandler(deleteDonation)
 );
 

@@ -61,13 +61,18 @@ if (config.NODE_ENV !== 'production') {
   );
 }
 
-// Create wrapper functions for common log operations
+// Create wrapper functions for common log operations with optional request ID
 export const logInfo = (message: string, meta?: any): void => {
   logger.info(message, meta);
 };
 
-export const logError = (message: string, error?: Error | any): void => {
-  logger.error(message, { error: error?.message, stack: error?.stack, ...error });
+export const logError = (message: string, error?: Error | any, meta?: any): void => {
+  logger.error(message, { 
+    error: error?.message, 
+    stack: error?.stack, 
+    ...meta,
+    ...(error && typeof error === 'object' ? error : {})
+  });
 };
 
 export const logWarn = (message: string, meta?: any): void => {
@@ -80,6 +85,31 @@ export const logDebug = (message: string, meta?: any): void => {
 
 export const logHttp = (message: string, meta?: any): void => {
   logger.http(message, meta);
+};
+
+// Log with request ID
+export const logWithRequest = (
+  level: 'info' | 'error' | 'warn' | 'debug',
+  message: string,
+  requestId?: string,
+  meta?: any
+): void => {
+  const logData = { requestId, ...meta };
+  
+  switch (level) {
+    case 'info':
+      logger.info(message, logData);
+      break;
+    case 'error':
+      logger.error(message, logData);
+      break;
+    case 'warn':
+      logger.warn(message, logData);
+      break;
+    case 'debug':
+      logger.debug(message, logData);
+      break;
+  }
 };
 
 export default logger;

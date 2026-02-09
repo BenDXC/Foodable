@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { body, validationResult, ValidationChain } from 'express-validator';
+import { body, param, query, validationResult, ValidationChain } from 'express-validator';
 import { ValidationError } from './errorHandler';
 
 /**
@@ -12,6 +12,7 @@ export const validate = (req: Request, res: Response, next: NextFunction): void 
     const formattedErrors = errors.array().map((error) => ({
       field: error.type === 'field' ? error.path : 'unknown',
       message: error.msg,
+      value: error.type === 'field' ? error.value : undefined,
     }));
     
     throw new ValidationError('Validation failed', formattedErrors);
@@ -163,26 +164,65 @@ export const changePasswordValidation: ValidationChain[] = [
 /**
  * ID parameter validation
  */
-export const idValidation: ValidationChain[] = [
-  body('id')
-    .optional()
+export const idParamValidation: ValidationChain[] = [
+  param('id')
     .isInt({ min: 1 })
     .withMessage('ID must be a positive integer'),
 ];
 
 /**
- * Pagination validation
+ * Pagination query validation
  */
 export const paginationValidation: ValidationChain[] = [
-  body('page')
+  query('page')
     .optional()
     .isInt({ min: 1 })
-    .withMessage('Page must be a positive integer'),
+    .withMessage('Page must be a positive integer')
+    .toInt(),
   
-  body('limit')
+  query('limit')
     .optional()
     .isInt({ min: 1, max: 100 })
-    .withMessage('Limit must be between 1 and 100'),
+    .withMessage('Limit must be between 1 and 100')
+    .toInt(),
 ];
+
+/**
+ * Email query validation
+ */
+export const emailQueryValidation: ValidationChain[] = [
+  query('email')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required')
+    .isEmail()
+    .withMessage('Must be a valid email address')
+    .normalizeEmail(),
+];
+
+/**
+ * Status query validation
+ */
+export const statusQueryValidation: ValidationChain[] = [
+  query('status')
+    .optional()
+    .isIn(['pending', 'approved', 'claimed', 'expired'])
+    .withMessage('Status must be one of: pending, approved, claimed, expired'),
+];
+
+/**
+ * Sanitize and validate update fields - don't allow empty updates
+ */
+export const hasUpdateFields = (req: Request, res: Response, next: NextFunction): void => {
+  const allowedFields = Object.keys(req.body).filter(
+    key => req.body[key] !== undefined && req.body[key] !== null && req.body[key] !== ''
+  );
+  
+  if (allowedFields.length === 0) {
+    throw new ValidationError('At least one field must be provided for update');
+  }
+  
+  next();
+};
 
 export default validate;

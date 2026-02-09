@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 import { config } from './index';
-import { logInfo, logError } from '../utils/logger';
+import { logInfo, logError, logWarn } from '../utils/logger';
 
 // Create connection pool
 export const pool = mysql.createPool({
@@ -16,29 +16,73 @@ export const pool = mysql.createPool({
   keepAliveInitialDelay: 0,
 });
 
-// Test database connection
-export const testConnection = async (): Promise<void> => {
-  try {
-    const connection = await pool.getConnection();
-    logInfo('Database connection established successfully');
-    connection.release();
-  } catch (error) {
-    logError('Failed to connect to database', error);
-    throw error;
+// Test database connection with retry logic
+export const testConnection = async (retries: number = 3): Promise<void> => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const connection = await pool.getConnection();
+      await connection.ping();
+      logInfo('Database connection established successfully', {
+        attempt: i + 1,
+        host: config.DB_HOST,
+        database: config.DB_NAME,
+      });
+      connection.release();
+      return;
+    } catch (error) {
+      const isLastAttempt = i === retries - 1;
+      logError(`Failed to connect to database (attempt ${i + 1}/${retries})`, error);
+      
+      if (isLastAttempt) {
+        throw new Error(
+          `Unable to establish database connection after ${retries} attempts. ` +
+          `Please check your database configuration and ensure MySQL is running.`
+        );
+      }
+      
+      // Wait before retrying (exponential backoff)
+      const delay = Math.pow(2, i) * 1000;
+      logInfo(`Retrying database connection in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 };
 
-// Execute query with error handling
+// Execute query with error handling and logging
 export const query = async <T = any>(
   sql: string,
   params?: any[]
 ): Promise<T> => {
+  const startTime = Date.now();
+  
   try {
     const [rows] = await pool.execute(sql, params);
+    const duration = Date.now() - startTime;
+    
+    // Log slow queries (over 1 second)
+    if (duration > 1000) {
+      logWarn('Slow query detected', {
+        sql: sql.substring(0, 100),
+        duration: `${duration}ms`,
+        params: params?.slice(0, 5), // Only log first 5 params for privacy
+      });
+    }
+    
     return rows as T;
   } catch (error: any) {
-    logError(`Database query failed: ${sql}`, error);
-    throw error;
+    logError(`Database query failed: ${sql.substring(0, 100)}`, error, {
+      errorCode: error.code,
+      sqlState: error.sqlState,
+      params: params?.slice(0, 5),
+    });
+    
+    // Re-throw with more context
+    const enhancedError = new Error(
+      error.message || 'Database query failed'
+    );
+    (enhancedError as any).code = error.code;
+    (enhancedError as any).sqlState = error.sqlState;
+    throw enhancedError;
   }
 };
 

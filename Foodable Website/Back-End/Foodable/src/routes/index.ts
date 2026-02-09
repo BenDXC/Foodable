@@ -1,19 +1,15 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
 import donationRoutes from './donation.routes';
+import { healthCheck, detailedHealthCheck } from '../controllers/health.controller';
+import { asyncHandler } from '../middleware/errorHandler';
 
 const router = Router();
 
-// Health check endpoint
-router.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({
-    success: true,
-    message: 'API is running',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-  });
-});
+// Health check endpoints
+router.get('/health', asyncHandler(healthCheck));
+router.get('/health/detailed', asyncHandler(detailedHealthCheck));
 
 // API routes
 router.use('/auth', authRoutes);
