@@ -1,42 +1,37 @@
-import React, { Component } from "react";
-import { foodpackages } from "./ReceiverFiles/FoodPackages";
+import React, { useState, useCallback } from "react";
+import { foodpackages, FoodPackage } from "./ReceiverFiles/FoodPackages";
 import ItemList from "./ReceiverFiles/ItemList";
 import "./ReceiverFiles/Receiver.css";
+import logger from "../../utils/logger";
 
-export default class extends Component {
-  state = {
-    products: foodpackages,
-    filteredProducts: [],
-  };
+export default function ReceiverPage(): JSX.Element {
+  const [products] = useState<FoodPackage[]>(foodpackages);
+  const [filteredProducts, setFilteredProducts] = useState<FoodPackage[]>([]);
 
-  //buttons functionality
-
-  buttonhandler = (e) => {
-    console.log(e.target.value);
-    let filteredProducts;
-    if (e.target.value === "All") {
-      filteredProducts = this.state.products;
+  const buttonhandler = useCallback((e: React.MouseEvent<HTMLButtonElement>): void => {
+    const value = (e.target as HTMLButtonElement).value;
+    logger.debug('Filter clicked:', value);
+    
+    let filtered: FoodPackage[];
+    if (value === "All") {
+      filtered = products;
     } else {
-      filteredProducts = this.state.products.filter(
-        (item) => item.packageType === e.target.value
+      filtered = products.filter(
+        (item) => item.packageType === value
       );
     }
 
-    this.setState({
-      filteredProducts: filteredProducts,
-    });
-  };
+    setFilteredProducts(filtered);
+  }, [products]);
 
-  render() {
-    return (
-      <div>
-        <div className="pageResults">
-          <ItemList
-            products={this.state.filteredProducts}
-            buttonhandler={this.buttonhandler}
-          />
-        </div>
+  return (
+    <div>
+      <div className="pageResults">
+        <ItemList
+          products={filteredProducts}
+          buttonhandler={buttonhandler}
+        />
       </div>
-    );
-  }
+    </div>
+  );
 }

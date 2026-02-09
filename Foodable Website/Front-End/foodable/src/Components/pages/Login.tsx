@@ -1,8 +1,11 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
+import toast from 'react-hot-toast';
 import "./cssFiles/Login.css";
 import { Button_Register } from "../MPComponents/Button";
-import axios, { AxiosError, AxiosResponse } from "axios";
-import { SetUserProps, LoginData } from "../../types";
+import { SetUserProps } from "../../types";
+import { AuthService, ApiError } from "../../services/api.service";
+import { VALIDATION, ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../constants";
+import logger from "../../utils/logger";
 
 interface LoginInputs {
   email?: string;
@@ -17,6 +20,7 @@ interface LoginResponse {
 export default function Login(props: SetUserProps): JSX.Element {
   const [inputs, setInput] = useState<LoginInputs>({});
   const [output, setOutput] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const target = event.target;
@@ -26,65 +30,59 @@ export default function Login(props: SetUserProps): JSX.Element {
   };
 
   const validateForm = (): boolean => {
-    const mailformat = /\S+@\S+\.\S+/;
-    let valid = false;
     if (!inputs.email || !inputs.password) {
-      setOutput("Validation failure: Please fill in all text fields.");
-    } else if (!mailformat.test(inputs.email)) {
-      setOutput(
-        "Validation failure: Invalid e-mail address. Please enter your e-mail again."
-      );
-    } else if (inputs.password.length < 8) {
-      setOutput(
-        "Validation failure: Password is too short. Please enter your password"
-      );
-    } else {
-      valid = true;
+      const error = ERROR_MESSAGES.REQUIRED_FIELDS;
+      setOutput(error);
+      toast.error(error);
+      return false;
     }
-    return valid;
+    
+    if (!VALIDATION.EMAIL_REGEX.test(inputs.email)) {
+      const error = ERROR_MESSAGES.INVALID_EMAIL;
+      setOutput(error);
+      toast.error(error);
+      return false;
+    }
+    
+    if (inputs.password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
+      const error = ERROR_MESSAGES.PASSWORD_TOO_SHORT;
+      setOutput(error);
+      toast.error(error);
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
 
-    const dataLogin: LoginData = { 
-      email: inputs.email || "", 
-      password: inputs.password || "" 
-    };
+    if (!validateForm()) return;
 
-    console.log(dataLogin);
+    setLoading(true);
+    
+    try {
+      const { token } = await AuthService.login({
+        email: inputs.email || "",
+        password: inputs.password || "",
+      });
 
-    if (validateForm()) {
-      try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-        const response: AxiosResponse<LoginResponse> = await axios({
-          method: "post",
-          url: `${apiBaseUrl}/signin`,
-          data: dataLogin,
-        });
-
-        console.log(response);
-        if (response.status === 200) {
-          setOutput("Login success");
-          const jwtToken = response.headers.authorization?.split(" ")[1];
-          if (jwtToken) {
-            sessionStorage.setItem("jwt", jwtToken);
-            console.log(jwtToken);
-            props.setLoggedinUser(inputs.email || "");
-          } else {
-            setOutput("Token failure");
-            props.setLoggedinUser("");
-          }
-        } else {
-          setOutput("Login failure");
-          props.setLoggedinUser("");
-        }
-      } catch (err) {
-        const error = err as AxiosError;
-        console.log(error.response);
-        setOutput("Login failure");
-        props.setLoggedinUser("");
-      }
+      sessionStorage.setItem("jwt", token);
+      props.setLoggedinUser(inputs.email || "");
+      
+      setOutput(SUCCESS_MESSAGES.LOGIN_SUCCESS);
+      toast.success(SUCCESS_MESSAGES.LOGIN_SUCCESS);
+      logger.debug('Login successful for:', inputs.email);
+    } catch (err) {
+      const error = err as ApiError;
+      const errorMsg = error.message || ERROR_MESSAGES.LOGIN_FAILURE;
+      
+      setOutput(errorMsg);
+      toast.error(errorMsg);
+      props.setLoggedinUser("");
+      logger.error('Login failed', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,7 +114,12 @@ export default function Login(props: SetUserProps): JSX.Element {
             />
           </div>
           <div className="buttonbg">
-            <input className="signinbutton" type="submit" />
+            <input 
+              className="signinbutton" 
+              type="submit" 
+              disabled={loading}
+              value={loading ? "Signing in..." : "Sign In"}
+            />
           </div>
           <p className="sign-upmessage">Don't have an account? Sign Up!</p>
           <div className="signupbut">

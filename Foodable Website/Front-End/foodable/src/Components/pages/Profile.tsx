@@ -1,42 +1,55 @@
-import React from "react";
+import React, { useState, FormEvent, ChangeEvent } from "react";
 import "./cssFiles/Profile.css";
 import "./cssFiles/CreateDonation.css";
-import { Link } from "react-router-dom";
+import { SetUserProps } from "../../types";
+import UserSidebar from "../shared/UserSidebar";
 
-export default function Donator_Navbar() {
+interface ProfileFormData {
+  firstName?: string;
+  lastName?: string;
+  postcode?: string;
+  email?: string;
+}
+
+export default function ProfilePage(props: SetUserProps): JSX.Element {
+  // TODO: Get username from context/props
+  const username = "User"; // Replace with actual user data
+
   return (
     <div className="profilecontainer">
-      <div className="mini-nav">
-        <img
-          className="profilephoto"
-          src="Img/foodable1mini.jpg"
-          alt="foodable"
-        />
-        <h1 className="username">Hasan Narmah</h1>
-        <div className="sidebar">
-          <div className="sidemenu">
-            <div className="sidebutton">
-              <ul>
-                <li>
-                  <Link to="/Donator">Donate</Link>
-                </li>
-                <li>
-                  <Link to="/Reward">Rewards</Link>
-                </li>
-                <li>
-                  <Link to="/Profile">Profile</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <Profile />
-      </div>
+      <UserSidebar username={username} />
+      <Profile />
     </div>
   );
 }
 
-function Profile() {
+function Profile(): JSX.Element {
+  const [formData, setFormData] = useState<ProfileFormData>({
+    firstName: 'John',
+    lastName: 'Doe',
+    postcode: 'SL6 1TJ',
+    email: 'johndoe@gmail.com',
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      // TODO: API call to update profile
+      console.log('Updating profile:', formData);
+    } catch (error) {
+      console.error('Profile update failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <div className="editprofile">
@@ -47,22 +60,34 @@ function Profile() {
           <div className="text-center">
             <img src="Img/foodable1mini.jpg" className="avatar" alt="avatar" />
             <h4 className="cpp">Change profile picture</h4>
-            <input type="file" className="imagebtn" />
+            <input type="file" className="imagebtn" accept="image/*" />
           </div>
         </div>
         {/* edit form column */}
         <h3 className="pititle">Personal info</h3>
-        <form className="Profile-Form">
+        <form className="Profile-Form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="fnlabel">First name:</label>
             <div className="col-lg-8">
-              <input className="form-control" type="text" defaultValue="John" />
+              <input 
+                className="form-control" 
+                type="text" 
+                name="firstName"
+                value={formData.firstName || ''} 
+                onChange={handleChange}
+              />
             </div>
           </div>
           <div className="form-group">
             <label className="col-lg-3 control-label">Last name:</label>
             <div className="col-lg-8">
-              <input className="form-control" type="text" defaultValue="Doe" />
+              <input 
+                className="form-control" 
+                type="text" 
+                name="lastName"
+                value={formData.lastName || ''} 
+                onChange={handleChange}
+              />
             </div>
           </div>
           <div className="form-group">
@@ -71,7 +96,9 @@ function Profile() {
               <input
                 className="form-control"
                 type="text"
-                defaultValue="SL6 1TJ"
+                name="postcode"
+                value={formData.postcode || ''}
+                onChange={handleChange}
               />
             </div>
           </div>
@@ -80,16 +107,18 @@ function Profile() {
             <div className="col-lg-8">
               <input
                 className="form-control"
-                type="text"
-                defaultValue="johndoe@gmail.com"
+                type="email"
+                name="email"
+                value={formData.email || ''}
+                onChange={handleChange}
               />
             </div>
           </div>
           <div className="form-group">
             <div className="col-lg-8"></div>
           </div>
-          <button type="submit" className="sub-btn">
-            Confirm changes
+          <button type="submit" className="sub-btn" disabled={loading}>
+            {loading ? 'Saving...' : 'Confirm changes'}
           </button>
         </form>
       </div>

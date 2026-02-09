@@ -1,17 +1,19 @@
 import React from "react";
+import { FoodPackage } from "./FoodPackages";
 
-export default function singleItem(props) {
+interface SingleItemProps {
+  product: FoodPackage;
+}
+
+export default function SingleItem({ product }: SingleItemProps): JSX.Element {
   return (
     <div className="single">
       <h2>
-        {" "}
-        {props.product.packageID} ({props.product.packageType}){" "}
+        {product.packageID} ({product.packageType})
       </h2>
-      <h3> {props.product.packageLocation} </h3>
-
-      <p> {props.product.packageDesc}</p>
-
-      <p className="a"> Contact foodbank</p>
+      <h3>{product.packageLocation}</h3>
+      <p>{product.packageDesc}</p>
+      <p className="a">Contact foodbank</p>
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import React, { useState, ChangeEvent, FormEvent } from "react";
-import axios, { AxiosError } from "axios";
+import toast from 'react-hot-toast';
 import { Button } from "../MPComponents/Button";
 import "./cssFiles/Register.css";
-import { VALIDATION, ERROR_MESSAGES } from "../../constants";
+import { VALIDATION, ERROR_MESSAGES, SUCCESS_MESSAGES } from "../../constants";
+import { AuthService, ApiError } from "../../services/api.service";
 import logger from "../../utils/logger";
 
 interface RegistrationInputs {
@@ -34,32 +35,48 @@ function Registration(): JSX.Element {
   const validateForm = (): boolean => {
     logger.debug('Validating registration form', inputs);
     
-    let valid = false;
-    if (
-      !inputs.username ||
-      !inputs.email ||
-      !inputs.password ||
-      !inputs.repPassword
-    ) {
-      setOutput(ERROR_MESSAGES.REQUIRED_FIELDS);
-    } else if (inputs.username.length > VALIDATION.MAX_USERNAME_LENGTH) {
-      setOutput(ERROR_MESSAGES.USERNAME_TOO_LONG);
-    } else if (!VALIDATION.EMAIL_REGEX.test(inputs.email)) {
-      setOutput(ERROR_MESSAGES.INVALID_EMAIL);
-    } else if (inputs.password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
-      setOutput(ERROR_MESSAGES.PASSWORD_TOO_SHORT);
-    } else if (inputs.password !== inputs.repPassword) {
-      setOutput(ERROR_MESSAGES.PASSWORDS_MISMATCH);
-    } else if (!inputs.tos) {
-      setOutput(ERROR_MESSAGES.TOS_NOT_ACCEPTED);
-    } else {
-      valid = true;
+    const showError = (error: string): void => {
+      setOutput(error);
+      toast.error(error);
+    };
+    
+    if (!inputs.username || !inputs.email || !inputs.password || !inputs.repPassword) {
+      showError(ERROR_MESSAGES.REQUIRED_FIELDS);
+      return false;
     }
-    return valid;
+    
+    if (inputs.username.length > VALIDATION.MAX_USERNAME_LENGTH) {
+      showError(ERROR_MESSAGES.USERNAME_TOO_LONG);
+      return false;
+    }
+    
+    if (!VALIDATION.EMAIL_REGEX.test(inputs.email)) {
+      showError(ERROR_MESSAGES.INVALID_EMAIL);
+      return false;
+    }
+    
+    if (inputs.password.length < VALIDATION.MIN_PASSWORD_LENGTH) {
+      showError(ERROR_MESSAGES.PASSWORD_TOO_SHORT);
+      return false;
+    }
+    
+    if (inputs.password !== inputs.repPassword) {
+      showError(ERROR_MESSAGES.PASSWORDS_MISMATCH);
+      return false;
+    }
+    
+    if (!inputs.tos) {
+      showError(ERROR_MESSAGES.TOS_NOT_ACCEPTED);
+      return false;
+    }
+    
+    return true;
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
+
+    if (!validateForm()) return;
 
     const dataRegistration: RegistrationData = {
       username: inputs.username || "",
@@ -67,28 +84,26 @@ function Registration(): JSX.Element {
       password: inputs.password || "",
     };
 
-    if (validateForm()) {
-      setLoading(true);
-      try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
-        const response = await axios.post(
-          `${apiBaseUrl}/signup`,
-          dataRegistration
-        );
-        
-        logger.debug('Registration response', response);
-        setOutput(
-          response.status === 201
-            ? `Registration success: ${dataRegistration.username}`
-            : ERROR_MESSAGES.REGISTRATION_FAILURE
-        );
-      } catch (err) {
-        const error = err as AxiosError;
-        logger.error('Registration failed', error);
-        setOutput(ERROR_MESSAGES.REGISTRATION_FAILURE);
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    
+    try {
+      const result = await AuthService.register(dataRegistration);
+      
+      setOutput(result.message);
+      toast.success(result.message);
+      logger.debug('Registration successful:', dataRegistration.username);
+      
+      // Clear form on success
+      setInput({});
+    } catch (err) {
+      const error = err as ApiError;
+      const errorMsg = error.message || ERROR_MESSAGES.REGISTRATION_FAILURE;
+      
+      setOutput(errorMsg);
+      toast.error(errorMsg);
+      logger.error('Registration failed', error);
+    } finally {
+      setLoading(false);
     }
   };
   return (

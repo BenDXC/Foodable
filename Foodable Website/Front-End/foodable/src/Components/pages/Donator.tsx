@@ -1,63 +1,73 @@
-import React from "react";
-// import Profile from "./Profile";
+import React, { useState, FormEvent, ChangeEvent } from "react";
 import "./cssFiles/Donator.css";
 import "./cssFiles/CreateDonation.css";
-import { Link } from "react-router-dom";
+import { SetUserProps } from "../../types";
+import UserSidebar from "../shared/UserSidebar";
 
-export default function Donator_Navbar() {
+interface DonationFormData {
+  itemName?: string;
+  itemQuantity?: number;
+  dietaryPreference?: string;
+  expiryDate?: string;
+  image?: File;
+}
+
+export default function DonatorPage(props: SetUserProps): JSX.Element {
+  // TODO: Get username from context/props
+  const username = "User"; // Replace with actual user data
+
   return (
     <div className="profilecontainer">
-      <div className="mini-nav">
-        <img
-          className="profilephoto"
-          src="Img/foodable1mini.jpg"
-          alt="foodable"
-        />
-        <h1 className="username">Hasan Narmah</h1>
-        <div className="sidebar">
-          <div className="sidemenu">
-            <div className="sidebutton">
-              <ul>
-                <li>
-                  <Link to="/Donator">Donate</Link>
-                </li>
-                <li>
-                  <Link to="/Reward">Rewards</Link>
-                </li>
-                <li>
-                  <Link to="/Profile">Profile</Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <CreateDonation />
-        {/* <Profile /> */}
-      </div>
+      <UserSidebar username={username} />
+      <CreateDonation />
     </div>
   );
 }
-function CreateDonation() {
+function CreateDonation(): JSX.Element {
+  const [formData, setFormData] = useState<DonationFormData>({});
+  const [items, setItems] = useState<string[]>([]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
+    e.preventDefault();
+    // Add item to list
+    if (formData.itemName) {
+      setItems([...items, formData.itemName]);
+      setFormData({});
+    }
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    const { name, value, type, files } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'file' ? files?.[0] : value
+    }));
+  };
+
   return (
     <div className="profilecontainer">
       <div className="cdbackground">
         <div className="itemform">
           <h1 className="titleil">Create Donation</h1>
-          <form className="create-form" action="">
+          <form className="create-form" onSubmit={handleSubmit}>
             <h2 className="itemname">Item name</h2>
             <input
               type="text"
-              name="Item Name"
+              name="itemName"
               id="txt"
               className="nameinput"
+              value={formData.itemName || ''}
+              onChange={handleChange}
               required
             />
             <h2 className="itemquantity">Item quantity</h2>
             <input
               type="number"
-              name="Item Quantity"
+              name="itemQuantity"
               id="number"
               className="itemq"
+              value={formData.itemQuantity || ''}
+              onChange={handleChange}
               min={1}
               max={100}
               required
@@ -65,45 +75,61 @@ function CreateDonation() {
             <h2 className="dtitle">Select dietary preference</h2>
             <input
               type="radio"
-              name="Dietary Preference"
+              name="dietaryPreference"
               id="dietary-halal"
               value="halal"
+              checked={formData.dietaryPreference === 'halal'}
+              onChange={handleChange}
               required
             />
             <label htmlFor="dietary-halal"> Halal</label>
             <br />
             <input
               type="radio"
-              name="Dietary Preference"
+              name="dietaryPreference"
               id="dietary-non-halal"
               value="non-halal"
+              checked={formData.dietaryPreference === 'non-halal'}
+              onChange={handleChange}
             />
             <label htmlFor="dietary-non-halal"> Non-Halal</label>
             <br />
             <input
               type="radio"
-              name="Dietary Preference"
+              name="dietaryPreference"
               id="dietary-vegan"
               value="vegan"
+              checked={formData.dietaryPreference === 'vegan'}
+              onChange={handleChange}
             />
             <label htmlFor="dietary-vegan"> Vegan</label>
             <br />
             <input
               type="radio"
-              name="Dietary Preference"
+              name="dietaryPreference"
               id="dietary-vegetarian"
               value="vegetarian"
+              checked={formData.dietaryPreference === 'vegetarian'}
+              onChange={handleChange}
             />
             <label htmlFor="dietary-vegetarian"> Vegetarian</label>
             <br />
             <h2 className="extitle">Expiry date</h2>
-            <input type="date" name="bbd" id="Expiry" required />
+            <input 
+              type="date" 
+              name="expiryDate" 
+              id="Expiry" 
+              value={formData.expiryDate || ''}
+              onChange={handleChange}
+              required 
+            />
             <h2 className="imagetitle">Upload image</h2>
             <input
               type="file"
               id="FoodImage"
-              name="filename"
+              name="image"
               accept="image/*"
+              onChange={handleChange}
             />
             <br />
             <button type="submit" className="sub-btn">

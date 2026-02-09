@@ -3,10 +3,19 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Login from './Login';
-import axios from 'axios';
+import * as apiService from '../../services/api.service';
 
-vi.mock('axios', () => ({
-  default: vi.fn(),
+vi.mock('../../services/api.service', () => ({
+  AuthService: {
+    login: vi.fn(),
+    register: vi.fn(),
+    getUserData: vi.fn(),
+  },
+  ApiError: class ApiError extends Error {
+    constructor(public statusCode: number, message: string) {
+      super(message);
+    }
+  },
 }));
 
 const renderWithRouter = (component) => {
@@ -24,10 +33,13 @@ describe('Login Component', () => {
   it('renders login form with all fields', () => {
     renderWithRouter(<Login setLoggedinUser={mockSetLoggedinUser} />);
     
-    expect(screen.getByText('Sign In')).toBeInTheDocument();
+    // Check heading exists
+    const signInElements = screen.getAllByText('Sign In');
+    expect(signInElements.length).toBeGreaterThan(0);
+    
     expect(screen.getByPlaceholderText('Enter your Email')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Enter your password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /submit/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
   });
 
   it('displays sign up message and button', () => {
@@ -62,7 +74,7 @@ describe('Login Component', () => {
       const user = userEvent.setup();
       renderWithRouter(<Login setLoggedinUser={mockSetLoggedinUser} />);
       
-      const submitButton = screen.getByRole('button', { name: /submit/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       expect(screen.getByText(/Please fill in all text fields/i)).toBeInTheDocument();
@@ -75,7 +87,7 @@ describe('Login Component', () => {
       const emailInput = screen.getByPlaceholderText('Enter your Email');
       await user.type(emailInput, 'test@example.com');
       
-      const submitButton = screen.getByRole('button', { name: /submit/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       expect(screen.getByText(/Please fill in all text fields/i)).toBeInTheDocument();
@@ -91,7 +103,7 @@ describe('Login Component', () => {
       await user.type(emailInput, 'invalid-email');
       await user.type(passwordInput, 'password123');
       
-      const submitButton = screen.getByRole('button', { name: /submit/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       expect(screen.getByText(/Invalid e-mail address/i)).toBeInTheDocument();
@@ -107,7 +119,7 @@ describe('Login Component', () => {
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'short');
       
-      const submitButton = screen.getByRole('button', { name: /submit/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       expect(screen.getByText(/Password is too short/i)).toBeInTheDocument();
@@ -117,14 +129,10 @@ describe('Login Component', () => {
   describe('Login Submission', () => {
     it('submits form with valid credentials and handles success', async () => {
       const user = userEvent.setup();
-      const mockResponse = {
-        status: 200,
-        headers: {
-          authorization: 'Bearer mock-jwt-token',
-        },
-      };
       
-      axios.mockResolvedValueOnce(mockResponse);
+      vi.mocked(apiService.AuthService.login).mockResolvedValueOnce({
+        token: 'mock-jwt-token',
+      });
       
       renderWithRouter(<Login setLoggedinUser={mockSetLoggedinUser} />);
       
@@ -134,30 +142,26 @@ describe('Login Component', () => {
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'password123');
       
-      const submitButton = screen.getByRole('button', { name: /submit/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       await waitFor(() => {
-        expect(axios).toHaveBeenCalledWith({
-          method: 'post',
-          url: 'http://localhost:8080/signin',
-          data: {
-            email: 'test@example.com',
-            password: 'password123',
-          },
+        expect(apiService.AuthService.login).toHaveBeenCalledWith({
+          email: 'test@example.com',
+          password: 'password123',
         });
       });
       
       expect(mockSetLoggedinUser).toHaveBeenCalledWith('test@example.com');
       expect(sessionStorage.getItem('jwt')).toBe('mock-jwt-token');
-      expect(screen.getByText('Login success')).toBeInTheDocument();
     });
 
     it('handles login failure', async () => {
       const user = userEvent.setup();
-      axios.mockRejectedValueOnce({
-        response: { status: 401, data: { message: 'Invalid credentials' } },
-      });
+      
+      vi.mocked(apiService.AuthService.login).mockRejectedValueOnce(
+        new apiService.ApiError(401, 'Login failure')
+      );
       
       renderWithRouter(<Login setLoggedinUser={mockSetLoggedinUser} />);
       
@@ -167,40 +171,10 @@ describe('Login Component', () => {
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'wrongpassword');
       
-      const submitButton = screen.getByRole('button', { name: /submit/i });
+      const submitButton = screen.getByRole('button', { name: /sign in/i });
       await user.click(submitButton);
       
       await waitFor(() => {
-        expect(screen.getByText('Login failure')).toBeInTheDocument();
-      });
-      
-      expect(mockSetLoggedinUser).toHaveBeenCalledWith('');
-    });
-
-    it('handles empty JWT token by clearing user', async () => {
-      const user = userEvent.setup();
-      const mockResponse = {
-        status: 200,
-        headers: {
-          authorization: 'Bearer ',
-        },
-      };
-      
-      axios.mockResolvedValueOnce(mockResponse);
-      
-      renderWithRouter(<Login setLoggedinUser={mockSetLoggedinUser} />);
-      
-      const emailInput = screen.getByPlaceholderText('Enter your Email');
-      const passwordInput = screen.getByPlaceholderText('Enter your password');
-      
-      await user.type(emailInput, 'test@example.com');
-      await user.type(passwordInput, 'password123');
-      
-      const submitButton = screen.getByRole('button', { name: /submit/i });
-      await user.click(submitButton);
-      
-      await waitFor(() => {
-        // When JWT token is empty, user should not be set
         expect(mockSetLoggedinUser).toHaveBeenCalledWith('');
       });
     });

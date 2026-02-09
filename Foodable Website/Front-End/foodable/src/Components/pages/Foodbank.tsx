@@ -1,10 +1,8 @@
-import React from "react";
+import React, { useState, useCallback, useRef, ChangeEvent } from "react";
 import {
   GoogleMap,
   useLoadScript,
   Marker,
-  InfoWindow,
-  InfoBox,
 } from "@react-google-maps/api";
 import usePlacesAutocomplete, {
   getGeocode,
@@ -20,48 +18,64 @@ import {
 
 import "./cssFiles/Foodbank.css";
 import "@reach/combobox/styles.css";
+import { ENV, MAP_CONFIG } from "../../constants";
+import logger from "../../utils/logger";
 
-const libraries = ["places"];
+const libraries = ["places"] as const;
+
+interface MarkerData {
+  lat: number;
+  lng: number;
+}
+
+interface LatLng {
+  lat: number;
+  lng: number;
+}
 
 const mapContainerStyle = {
   height: "80vh",
   width: "100vw",
 };
+
 const options = {
   disableDefaultUI: true,
   zoomControl: true,
   componentRestrictions: { country: "uk" },
 };
-const center = {
-  lat: 51.53474,
-  lng: -0.4686402,
-};
 
-export default function App() {
+export default function FoodbankPage(): JSX.Element {
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-    libraries,
+    googleMapsApiKey: ENV.GOOGLE_MAPS_API_KEY,
+    libraries: libraries as any,
   });
-  const [markers, setMarkers] = React.useState([]);
-  const [selected, setSelected] = React.useState(null);
-  const onMapClick = React.useCallback((e) => {
-    setMarkers((current) => [
-      ...current,
-      {
-        lat: e.latLng.lat(),
-        lng: e.latLng.lng(),
-      },
-    ]);
+  
+  const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [selected, setSelected] = useState<MarkerData | null>(null);
+  
+  const onMapClick = useCallback((e: google.maps.MapMouseEvent): void => {
+    if (e.latLng) {
+      setMarkers((current) => [
+        ...current,
+        {
+          lat: e.latLng.lat(),
+          lng: e.latLng.lng(),
+        },
+      ]);
+    }
   }, []);
 
-  const mapRef = React.useRef();
-  const onMapLoad = React.useCallback((map) => {
+  const mapRef = useRef<google.maps.Map | null>(null);
+  
+  const onMapLoad = useCallback((map: google.maps.Map): void => {
     mapRef.current = map;
   }, []);
 
-  const panTo = React.useCallback(({ lat, lng }) => {
-    mapRef.current.panTo({ lat, lng });
-    mapRef.current.setZoom(15);
+  const panTo = useCallback(({ lat, lng }: LatLng): void => {
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat, lng });
+      mapRef.current.setZoom(MAP_CONFIG.DETAIL_ZOOM);
+    }
   }, []);
 
   if (loadError) return "Error";
@@ -75,12 +89,11 @@ export default function App() {
       <GoogleMap
         id="map"
         mapContainerStyle={mapContainerStyle}
-        zoom={11}
-        center={center}
+        zoom={MAP_CONFIG.DEFAULT_ZOOM}
+        center={MAP_CONFIG.DEFAULT_CENTER}
         options={options}
         onClick={onMapClick}
         onLoad={onMapLoad}
-        strictBounds={true}
       >
         {markers.map((marker) => (
           <Marker
@@ -309,28 +322,37 @@ export default function App() {
   );
 }
 
-function Locate({ panTo }) {
+interface LocateProps {
+  panTo: (location: LatLng) => void;
+}
+
+function Locate({ panTo }: LocateProps): JSX.Element {
+  const handleLocate = (): void => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        panTo({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+      },
+      (error) => {
+        logger.error('Geolocation failed', error);
+      }
+    );
+  };
+
   return (
-    <button
-      className="locate"
-      onClick={() => {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            panTo({
-              lat: position.coords.latitude,
-              lng: position.coords.longitude,
-            });
-          },
-          () => null
-        );
-      }}
-    >
+    <button className="locate" onClick={handleLocate}>
       <img src="../Img/compass1.svg" alt="Get Location" />
     </button>
   );
 }
 
-function Search({ panTo }) {
+interface SearchProps {
+  panTo: (location: LatLng) => void;
+}
+
+function Search({ panTo }: SearchProps): JSX.Element {
   const {
     ready,
     value,
@@ -339,16 +361,19 @@ function Search({ panTo }) {
     clearSuggestions,
   } = usePlacesAutocomplete({
     requestOptions: {
-      location: { lat: () => 51.53474, lng: () => -0.4686402 },
-      radius: 10 * 100,
+      location: { 
+        lat: () => MAP_CONFIG.DEFAULT_CENTER.lat, 
+        lng: () => MAP_CONFIG.DEFAULT_CENTER.lng 
+      },
+      radius: MAP_CONFIG.SEARCH_RADIUS,
     },
   });
 
-  const handleInput = (e) => {
+  const handleInput = (e: ChangeEvent<HTMLInputElement>): void => {
     setValue(e.target.value);
   };
 
-  const handleSelect = async (address) => {
+  const handleSelect = async (address: string): Promise<void> => {
     setValue(address, false);
     clearSuggestions();
 
@@ -357,7 +382,7 @@ function Search({ panTo }) {
       const { lat, lng } = await getLatLng(results[0]);
       panTo({ lat, lng });
     } catch (error) {
-      console.log(" Error: ", error);
+      logger.error('Geocoding failed', error);
     }
   };
 
