@@ -1,14 +1,14 @@
-# 🍽️ Foodable Frontend
+# Foodable Frontend
 
 Modern React + TypeScript + Vite application for the Foodable food donation platform.
 
-## 🚀 Quick Start
+## Quick Start
 
 ```bash
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server (http://localhost:3000)
 npm run dev
 
 # Run tests
@@ -18,386 +18,223 @@ npm test
 npm run build
 ```
 
-## 📋 Prerequisites
+## Prerequisites
 
-- Node.js 18.x or higher
-- npm 9.x or higher
+- Node.js >= 16.0.0
+- npm >= 8.0.0
 
-## 🛠️ Tech Stack
+## Tech Stack
 
-- **React 18.2.0** - UI framework with latest features
-- **TypeScript 5.3.3** - Type-safe JavaScript
-- **Vite 5.0.12** - Next generation frontend tooling
-- **React Router DOM 6.2.1** - Client-side routing
-- **Axios** - HTTP client with interceptors
-- **Vitest** - Unit testing framework
-- **React Testing Library** - Component testing utilities
+- **React 18** -- UI framework
+- **TypeScript** -- Type-safe JavaScript
+- **Vite** -- Build tool with fast HMR
+- **React Router v6** -- Client-side routing
+- **Axios** -- HTTP client
+- **Google Maps API** -- Food bank location search (`@react-google-maps/api`, `use-places-autocomplete`)
+- **EmailJS** -- Contact form email delivery (`@emailjs/browser`)
+- **FontAwesome** -- Icon library
+- **React Hot Toast** -- Toast notifications
+- **Vitest + Testing Library** -- Unit testing
+- **Playwright** -- End-to-end testing
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
 ├── Components/
 │   ├── Axios/
 │   │   ├── http.ts              # Axios instance configuration
-│   │   └── http.test.tsx        # HTTP client tests
+│   │   └── http.test.tsx
 │   ├── MPComponents/            # Reusable UI components
-│   │   ├── Button.tsx           # Button variants (Login, Donator, Receiver, etc.)
-│   │   ├── Button.test.tsx      # Button component tests
+│   │   ├── Button.tsx           # Button variants
 │   │   ├── Cards.tsx            # Feature cards display
-│   │   ├── Cards.test.tsx       # Cards tests
 │   │   ├── CardItem.tsx         # Individual card component
-│   │   ├── CardItem.test.tsx    # Card item tests
-│   │   ├── Navbar.tsx           # Navigation bar with auth
-│   │   ├── Navbar.test.tsx      # Navbar tests
-│   │   ├── Footer.tsx           # Footer with links
-│   │   └── Footer.test.tsx      # Footer tests
-│   └── pages/                   # Page components
-│       ├── Home.tsx             # Landing page
-│       ├── Home.test.tsx        # Home page tests
-│       ├── Login.tsx            # Login form with validation
-│       ├── Login.test.tsx       # Login tests
-│       ├── Registration.tsx     # User registration
-│       ├── Donator.tsx          # Donor interface
-│       ├── Receiver.tsx         # Receiver interface
-│       ├── ReceiverFiles/       # Receiver sub-components
-│       │   ├── FoodPackages.tsx
-│       │   ├── ItemList.tsx
-│       │   └── singleItem.tsx
-│       ├── Foodbank.tsx         # Foodbank locations
-│       ├── Profile.tsx          # User profile
-│       ├── Reward.tsx           # Rewards system
-│       ├── RewardItem.tsx       # Individual reward
-│       ├── RewardItem.test.tsx  # Reward tests
-│       ├── About.tsx            # About page
-│       ├── About.test.tsx       # About tests
-│       ├── Contact.tsx          # Contact form
-│       ├── Contact.test.tsx     # Contact tests
-│       ├── Logout.tsx           # Logout handler
-│       └── cssFiles/            # Component-specific styles
+│   │   ├── Navbar.tsx           # Navigation bar with auth state
+│   │   └── Footer.tsx           # Footer with links
+│   ├── pages/                   # Page components
+│   │   ├── Home.tsx             # Landing page
+│   │   ├── Login.tsx            # Login form with validation
+│   │   ├── Registration.tsx     # User registration
+│   │   ├── Donator.tsx          # Donor interface
+│   │   ├── Receiver.tsx         # Receiver interface
+│   │   ├── ReceiverFiles/       # Receiver sub-components
+│   │   │   ├── FoodPackages.tsx
+│   │   │   ├── ItemList.tsx
+│   │   │   └── singleItem.tsx
+│   │   ├── Foodbank.tsx         # Food bank locator (Google Maps)
+│   │   ├── Profile.tsx          # User profile
+│   │   ├── Reward.tsx           # Rewards system
+│   │   ├── RewardItem.tsx       # Individual reward display
+│   │   ├── About.tsx            # About page
+│   │   ├── Contact.tsx          # Contact form (EmailJS)
+│   │   ├── Logout.tsx           # Logout handler
+│   │   └── cssFiles/            # Component-specific styles
+│   └── shared/
+│       ├── ErrorBoundary.tsx    # Error boundary component
+│       ├── ProtectedRoute.tsx   # Auth-guarded route wrapper
+│       └── UserSidebar.tsx      # User sidebar component
+├── context/
+│   └── AuthContext.tsx          # Authentication state (React Context)
+├── hooks/                       # Custom React hooks
+├── services/                    # API service layer
+├── constants/
+│   └── index.ts                 # Routes, validation, API config, map config
 ├── types/
 │   └── index.ts                 # TypeScript type definitions
-├── App.tsx                      # Main app component
-├── App.test.tsx                 # App tests
-├── index.tsx                    # Application entry point
+├── utils/
+│   └── logger.ts               # Client-side logger
+├── App.tsx                      # Main app with lazy-loaded routes
+├── index.tsx                    # Entry point
 ├── test-utils.tsx               # Test helper functions
-├── setupTests.ts                # Test configuration
-└── reportWebVitals.ts           # Performance monitoring
+└── setupTests.ts                # Test configuration
 ```
 
-## 🎯 Features
+## Features
 
 ### User Roles
 
-#### Donors
-- Register and login to donation system
-- Create food donation listings
-- View donation history
-- Earn rewards for contributions
-- Find nearby foodbanks
+**Donors** -- Register, create food donation listings, view donation history, earn rewards, and find nearby food banks.
 
-#### Receivers
-- Browse available food packages
-- Filter by dietary requirements
-- View foodbank locations on map
-- Access detailed item information
+**Receivers** -- Browse available food packages, filter by dietary requirements, view food bank locations on a map, and access detailed item information.
 
-#### Foodbanks
-- Manage location information
-- Coordinate donations
-- Update inventory
+**Food Banks** -- Manage location information, coordinate donations, and update inventory.
 
 ### Core Functionality
 
-#### Authentication
-- JWT-based authentication
-- Secure session management
-- Protected routes
-- User profile management
+- **Authentication** -- JWT-based login with session storage, protected routes, and profile management.
+- **Google Maps integration** -- Interactive food bank finder with location search and place autocomplete.
+- **Contact form** -- EmailJS-powered contact form with validation.
+- **Lazy loading** -- Route-level code splitting with React `Suspense` for faster initial loads.
+- **Error boundaries** -- Graceful error handling that prevents full-page crashes.
+- **Toast notifications** -- Non-intrusive success/error feedback via React Hot Toast.
+- **Responsive design** -- Mobile-first CSS with component-scoped stylesheets.
 
-#### Maps Integration
-- Google Maps API integration
-- Location-based search
-- Interactive foodbank finder
+## Testing
 
-#### Contact System
-- EmailJS integration
-- Contact form with validation
-- Direct email communication
-
-## 🧪 Testing
-
-### Test Coverage
-- **125 unit tests** across all components (Vitest)
-- **82 E2E tests** covering user flows (Playwright)
-- **12 unit test files** with comprehensive coverage
-- **5 E2E test suites** with browser automation
-- All tests use async/await patterns
-- Type-safe test utilities
-
-### Unit Tests (Vitest + React Testing Library)
+### Unit Tests (Vitest + Testing Library)
 
 ```bash
-# Run all unit tests
-npm test
-
-# Run tests in watch mode
-npm test -- --watch
-
-# Run specific test file
-npm test -- Button.test.tsx
-
-# Run with coverage report
-npm run test:coverage
-
-# Run with interactive UI
-npm run test:ui
+npm test                 # Run all unit tests
+npm run test:ui          # Interactive test UI
+npm run test:coverage    # Coverage report
 ```
-
-**Test Categories:**
-- **Component Tests**: UI component behavior
-- **Integration Tests**: Component interactions
-- **Form Validation Tests**: Input validation
-- **API Tests**: HTTP client configuration
-- **Async Tests**: Asynchronous operations
 
 ### End-to-End Tests (Playwright)
 
 ```bash
-# Run all E2E tests
-npm run test:e2e
-
-# Run with interactive UI
-npm run test:e2e:ui
-
-# View HTML report
-npm run test:e2e:report
-
-# Run in headed mode (see browser)
-npx playwright test --headed
-
-# Debug tests
-npx playwright test --debug
-```
-
-**E2E Test Suites:**
-1. **navigation.spec.ts** - Page routing and navigation (17 tests)
-2. **authentication.spec.ts** - Login and registration flows (11 tests)
-3. **forms.spec.ts** - Form validation and submission (11 tests)
-4. **pages.spec.ts** - All page components (21 tests)
-5. **ui-components.spec.ts** - UI components and interactions (22 tests)
-
-**E2E Coverage:**
-- ✅ Complete user journeys
-- ✅ Form validation in real browser
-- ✅ Navigation across all pages
-- ✅ Responsive design testing
-- ✅ Accessibility checks
-- ✅ Performance monitoring
-- ✅ Error handling
-- ✅ Mobile interactions
-
-## 📦 Scripts
-
-```bash
-# Development
-npm run dev              # Start dev server (localhost:3000)
-npm run build            # Build for production
-npm run preview          # Preview production build
-
-# Unit Testing (Vitest)
-npm test                 # Run unit tests
-npm run test:ui          # Interactive test UI
-npm run test:coverage    # Coverage report
-
-# E2E Testing (Playwright)
-npm run test:e2e         # Run E2E tests
+npm run test:e2e         # Run E2E tests (Chromium)
 npm run test:e2e:ui      # Playwright UI mode
 npm run test:e2e:report  # View HTML report
-
-# Type Checking
-npx tsc --noEmit         # Check TypeScript types
+npx playwright test --headed   # See the browser
+npx playwright test --debug    # Debug mode
 ```
 
-## 🔧 Configuration
+**E2E Test Suites** (in `e2e/`):
 
-### Vite Configuration (`vite.config.ts`)
+| Suite | File | Covers |
+|-------|------|--------|
+| Navigation | `navigation.spec.ts` | Page routing, footer links, navbar, logo |
+| Authentication | `authentication.spec.ts` | Login/registration forms, auth state |
+| Forms | `forms.spec.ts` | Contact form, validation, accessibility |
+| Pages | `pages.spec.ts` | All page components, responsiveness, errors |
+| UI Components | `ui-components.spec.ts` | Buttons, cards, navbar, footer, images |
 
-```typescript
-- React plugin for JSX/TSX support
-- TypeScript configuration
-- Test environment setup (jsdom)
-- Build optimization
-- Development server on port 3000
-```
+## Scripts
 
-### TypeScript Configuration (`tsconfig.json`)
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Vite dev server at `localhost:3000` |
+| `npm run build` | Production build to `build/` |
+| `npm run preview` | Preview the production build |
+| `npm test` | Run unit tests (Vitest) |
+| `npm run test:ui` | Interactive Vitest UI |
+| `npm run test:coverage` | Tests with coverage report |
+| `npm run test:e2e` | Playwright E2E tests |
+| `npm run test:e2e:ui` | Playwright UI mode |
+| `npm run test:e2e:report` | View Playwright HTML report |
+| `npm run lint` | ESLint check |
+| `npm run lint:fix` | ESLint auto-fix |
+| `npm run format` | Prettier format |
+| `npm run format:check` | Prettier check |
+| `npm run type-check` | TypeScript type validation |
 
-```json
-- Strict mode enabled
-- ES2020 target
-- React JSX support
-- Path aliases
-- Type checking for tests
-```
+## Configuration
 
-## 🌐 API Integration
+### Environment Variables
 
-### Base Configuration
-
-```typescript
-// src/Components/Axios/http.ts
-import axios from "axios";
-
-export default axios.create({
-  baseURL: "http://localhost:8080/api",
-  headers: {
-    "Content-type": "application/json"
-  }
-});
-```
-
-### Async/Await Pattern
-
-All API calls use modern async/await:
-
-```typescript
-const fetchData = async (): Promise<void> => {
-  try {
-    const response = await axios.get('/endpoint');
-    // Handle success
-  } catch (error) {
-    // Handle error
-  }
-};
-```
-
-## 🎨 Styling
-
-- **Modular CSS**: Component-scoped styles
-- **Responsive Design**: Mobile-first approach
-- **CSS Variables**: Consistent theming
-- **Font Awesome**: Icon library
-- **Google Fonts**: PT Sans typography
-
-## 🔐 Environment Variables
-
-Create `.env` file:
+Create `.env` from the provided `.env.example`:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080/api
-VITE_GOOGLE_MAPS_API_KEY=your_api_key
-VITE_EMAILJS_SERVICE_ID=gmail
-VITE_EMAILJS_TEMPLATE_ID=Automated_Email
-VITE_EMAILJS_USER_ID=user_mlsqPrWKZea6YAr2udP9X
+VITE_API_BASE_URL=http://localhost:8080
+NODE_ENV=development
 ```
 
-## 🚀 Deployment
+Optional variables for Google Maps and EmailJS:
 
-### Build for Production
+```env
+VITE_GOOGLE_MAPS_API_KEY=your-google-maps-key
+VITE_EMAILJS_SERVICE_ID=your-service-id
+VITE_EMAILJS_TEMPLATE_ID=your-template-id
+VITE_EMAILJS_USER_ID=your-emailjs-user-id
+```
+
+### Vite (`vite.config.ts`)
+
+- React plugin for JSX/TSX
+- Dev server on port 3000
+- Production build output to `build/`
+- Vitest configured with jsdom environment
+
+### Playwright (`playwright.config.ts`)
+
+- Test directory: `e2e/`
+- Base URL: `http://localhost:3000`
+- Browser: Chromium
+- Retries: 2 on CI, 0 locally
+- Screenshots and video on failure
+- Traces on first retry
+
+## API Integration
+
+The Axios HTTP client is configured in `src/Components/Axios/http.ts` and points to the backend API. All API calls use async/await with try/catch error handling.
+
+Base URL and other environment-dependent values are centralized in `src/constants/index.ts` via `import.meta.env`.
+
+## State Management
+
+- **React Context** (`AuthContext`) for authentication state (logged-in user, login/logout actions)
+- **Component state** (`useState`) for local UI state
+- **Session storage** for JWT token persistence
+
+## Styling
+
+- **Component-scoped CSS** in `pages/cssFiles/` and alongside MPComponents
+- **Responsive design** with mobile-first approach
+- **FontAwesome** for icons
+- **Google Fonts** (PT Sans) for typography
+
+## Deployment
 
 ```bash
 npm run build
+# Deploy the build/ folder to your hosting provider
 ```
 
-Output: `build/` directory with optimized assets
+Compatible with Vercel, Netlify, GitHub Pages, and AWS Amplify.
 
-### Preview Production Build
+## Troubleshooting
 
+**Port already in use:**
 ```bash
-npm run preview
-```
-
-### Deployment Platforms
-
-Compatible with:
-- Vercel
-- Netlify
-- GitHub Pages
-- AWS Amplify
-- Azure Static Web Apps
-
-## 📝 Code Style
-
-### TypeScript Best Practices
-- Strict type checking enabled
-- Explicit return types for functions
-- Interface definitions for props
-- Type-safe event handlers
-
-### React Best Practices
-- Functional components with hooks
-- Custom hooks for reusable logic
-- Proper dependency arrays in useEffect
-- Memoization where appropriate
-
-### Async Patterns
-- async/await instead of .then()
-- Proper error handling with try/catch
-- Typed error objects (AxiosError)
-- Loading and error states
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**Port already in use**
-```bash
-# Change port in vite.config.ts or use:
 npm run dev -- --port 3001
 ```
 
-**Node version mismatch**
+**TypeScript errors after dependency change:**
 ```bash
-# Use nvm to switch Node version:
-nvm use 18
+rm -rf node_modules package-lock.json && npm install
 ```
 
-**TypeScript errors**
-```bash
-# Clear cache and reinstall:
-rm -rf node_modules package-lock.json
-npm install
-```
-
-**Test failures**
-```bash
-# Clear test cache:
-npm test -- --clearCache
-```
-
-## 📊 Performance
-
-- **Fast Refresh**: Instant HMR with Vite
-- **Optimized Builds**: Tree-shaking and code splitting
-- **Type Safety**: Catch errors at compile time
-- **Lazy Loading**: Route-based code splitting
-- **Asset Optimization**: Automatic image optimization
-
-## 🔄 State Management
-
-Currently using:
-- React useState for local state
-- sessionStorage for authentication
-- Props for component communication
-
-Future considerations:
-- Redux Toolkit for global state
-- React Query for server state
-- Zustand for simpler state management
-
-## 🌟 Future Enhancements
-
-- [ ] Progressive Web App (PWA) support
-- [ ] Offline functionality
-- [ ] Push notifications
-- [ ] Real-time updates with WebSockets
-- [ ] Advanced filtering and search
-- [ ] Multi-language support (i18n)
-- [ ] Dark mode theme
-- [ ] Advanced analytics dashboard
-
-## 🤝 Contributing
+## Contributing
 
 1. Follow TypeScript strict mode guidelines
 2. Write tests for new features
@@ -406,20 +243,4 @@ Future considerations:
 5. Follow existing component structure
 6. Add proper error handling
 
-## 📚 Resources
-
-- [React Documentation](https://react.dev/)
-- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
-- [Vite Guide](https://vitejs.dev/guide/)
-- [Vitest Documentation](https://vitest.dev/)
-- [React Router](https://reactrouter.com/)
-
-## 📞 Support
-
-For issues or questions:
-- Create an issue in the repository
-- Email: foodable7@gmail.com
-
----
-
-**Built with React ⚛️ + TypeScript 📘 + Vite ⚡**
+See the root [CONTRIBUTING.md](../CONTRIBUTING.md) for the full guide.
