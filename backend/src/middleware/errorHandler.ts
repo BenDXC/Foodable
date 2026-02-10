@@ -133,7 +133,7 @@ export const errorHandler = (
   error: Error | HttpError | any,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   let handledError: HttpError;
 
@@ -173,7 +173,7 @@ export const errorHandler = (
  */
 export const notFoundHandler = (
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): void => {
   const error = new NotFoundError(`Route ${req.originalUrl} not found`);

@@ -5,7 +5,7 @@ import { ValidationError } from './errorHandler';
 /**
  * Validation middleware to check for validation errors
  */
-export const validate = (req: Request, res: Response, next: NextFunction): void => {
+export const validate = (req: Request, _res: Response, next: NextFunction): void => {
   const errors = validationResult(req);
   
   if (!errors.isEmpty()) {
@@ -213,7 +213,7 @@ export const statusQueryValidation: ValidationChain[] = [
 /**
  * Sanitize and validate update fields - don't allow empty updates
  */
-export const hasUpdateFields = (req: Request, res: Response, next: NextFunction): void => {
+export const hasUpdateFields = (req: Request, _res: Response, next: NextFunction): void => {
   const allowedFields = Object.keys(req.body).filter(
     key => req.body[key] !== undefined && req.body[key] !== null && req.body[key] !== ''
   );

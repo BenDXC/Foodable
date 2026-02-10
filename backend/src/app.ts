@@ -75,7 +75,7 @@ app.use(`/api/${config.API_VERSION}`, apiRateLimiter);
 app.use(`/api/${config.API_VERSION}`, routes);
 
 // Root endpoint
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Foodable API',

@@ -11,8 +11,8 @@ import { ERROR_MESSAGES } from '../utils/constants';
  */
 export const generateAccessToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, config.JWT_SECRET, {
-    expiresIn: config.JWT_EXPIRES_IN,
-  });
+    expiresIn: config.JWT_EXPIRES_IN as string | number,
+  } as jwt.SignOptions);
 };
 
 /**
@@ -20,8 +20,8 @@ export const generateAccessToken = (payload: JwtPayload): string => {
  */
 export const generateRefreshToken = (payload: JwtPayload): string => {
   return jwt.sign(payload, config.JWT_REFRESH_SECRET, {
-    expiresIn: config.JWT_REFRESH_EXPIRES_IN,
-  });
+    expiresIn: config.JWT_REFRESH_EXPIRES_IN as string | number,
+  } as jwt.SignOptions);
 };
 
 /**
@@ -76,7 +76,7 @@ const extractToken = (req: AuthRequest): string | null => {
  */
 export const authenticate = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -109,7 +109,7 @@ export const authenticate = async (
  */
 export const optionalAuth = async (
   req: AuthRequest,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
@@ -131,8 +131,8 @@ export const optionalAuth = async (
 /**
  * Authorization middleware - Check if user has required permissions
  */
-export const authorize = (...allowedRoles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+export const authorize = (..._allowedRoles: string[]) => {
+  return (req: AuthRequest, _res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
         throw new UnauthorizedError('Authentication required');
@@ -153,7 +153,7 @@ export const authorize = (...allowedRoles: string[]) => {
  * Check if user is the owner of the resource
  */
 export const isOwner = (userIdField: string = 'user_id') => {
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+  return (req: AuthRequest, _res: Response, next: NextFunction): void => {
     try {
       if (!req.user) {
         throw new UnauthorizedError('Authentication required');
@@ -185,7 +185,7 @@ export const authRateLimiter = (
 ) => {
   const attempts = new Map<string, { count: number; resetTime: number }>();
 
-  return (req: AuthRequest, res: Response, next: NextFunction): void => {
+  return (req: AuthRequest, _res: Response, next: NextFunction): void => {
     const identifier = req.ip || 'unknown';
     const now = Date.now();
 
