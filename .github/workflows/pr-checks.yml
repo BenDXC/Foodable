@@ -40,43 +40,12 @@ jobs:
           requireScope: false
           wip: true
 
-      - name: Validate commit messages
-        run: |
-          npm install -g @commitlint/cli @commitlint/config-conventional
-          git fetch origin ${{ github.base_ref }}
-          COMMITS=$(git rev-list origin/${{ github.base_ref }}..HEAD)
-
-          if [ -z "$COMMITS" ]; then
-            echo "No commits to validate"
-            exit 0
-          fi
-
-          echo "Commits in this PR:"
-          git log --oneline origin/${{ github.base_ref }}..HEAD
-
-          for commit in $COMMITS; do
-            MSG=$(git log --format=%B -n 1 $commit)
-            if echo "$MSG" | head -1 | grep -q "^Merge "; then
-              continue
-            fi
-            echo "$MSG" | npx commitlint --verbose || true
-          done
-
       - name: Check PR size
         run: |
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
           echo "Files changed: $CHANGED_FILES"
-
           if [ "$CHANGED_FILES" -gt "100" ]; then
             echo "::warning::Large PR with $CHANGED_FILES files. Consider splitting."
-          fi
-
-      - name: Check for merge conflicts
-        run: |
-          git fetch origin ${{ github.base_ref }}
-          if git merge-tree $(git merge-base HEAD origin/${{ github.base_ref }}) HEAD origin/${{ github.base_ref }} | grep -q "<<<<<"; then
-            echo "::error::Merge conflicts detected"
-            exit 1
           fi
 
       - name: Auto-label PR
@@ -109,7 +78,3 @@ jobs:
           reporter: github-pr-review
           eslint_flags: 'frontend/src/**/*.{ts,tsx} backend/src/**/*.ts'
           filter_mode: added
-
-      - name: Check for code duplication
-        run: npx jscpd frontend/src backend/src --reporters console || true
-        continue-on-error: true

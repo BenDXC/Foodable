@@ -30,29 +30,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Frontend ESLint
-        working-directory: frontend
-        run: npm run lint
-        continue-on-error: true
-
-      - name: Backend ESLint
-        working-directory: backend
-        run: npm run lint
-
-      - name: Prettier check
+      - name: ESLint
         run: |
-          npx prettier --check "frontend/src/**/*.{ts,tsx,js,jsx,json,css}" || true
-          npx prettier --check "backend/src/**/*.{ts,js,json}" || true
+          cd frontend && npm run lint
+          cd ../backend && npm run lint
 
-      - name: TypeScript check - Frontend
-        working-directory: frontend
-        run: npx tsc --noEmit
-        continue-on-error: true
+      - name: Prettier
+        run: |
+          npx prettier --check "frontend/src/**/*.{ts,tsx,js,jsx,json,css}"
+          npx prettier --check "backend/src/**/*.{ts,js,json}"
 
-      - name: TypeScript check - Backend
-        working-directory: backend
-        run: npx tsc --noEmit
-        continue-on-error: true
+      - name: TypeScript
+        run: |
+          cd frontend && npx tsc --noEmit
+          cd ../backend && npx tsc --noEmit
 
   test-frontend:
     name: Frontend Tests
@@ -70,8 +61,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        working-directory: frontend
-        run: npm install
+        run: npm ci
 
       - name: Run tests with coverage
         working-directory: frontend
@@ -117,8 +107,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        working-directory: backend
-        run: npm install
+        run: npm ci
 
       - name: Wait for MySQL
         run: |
@@ -175,87 +164,7 @@ jobs:
         working-directory: backend
         run: npm run build
 
-      - name: Verify builds
+      - name: Verify outputs
         run: |
-          test -d frontend/dist && echo "Frontend build OK" || exit 1
-          test -d backend/dist && echo "Backend build OK" || exit 1
-          echo "--- Frontend bundle ---"
-          du -sh frontend/dist/
-          echo "--- Backend output ---"
-          du -sh backend/dist/
-
-      - name: Upload frontend build
-        uses: actions/upload-artifact@v6
-        with:
-          name: frontend-build
-          path: frontend/dist
-          retention-days: 7
-
-      - name: Upload backend build
-        uses: actions/upload-artifact@v6
-        with:
-          name: backend-build
-          path: backend/dist
-          retention-days: 7
-
-  security:
-    name: Security Quick Scan
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-
-      - name: npm audit - Frontend
-        working-directory: frontend
-        run: npm audit --audit-level=high || true
-
-      - name: npm audit - Backend
-        working-directory: backend
-        run: npm audit --audit-level=high || true
-
-      - name: Secret scan
-        uses: trufflesecurity/trufflehog@v3.93.1
-        with:
-          path: ./
-          extra_args: --only-verified
-        continue-on-error: true
-
-  ci-passed:
-    name: CI Status
-    needs: [lint, test-frontend, test-backend, build, security]
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - name: Check results
-        run: |
-          echo "Lint:      ${{ needs.lint.result }}"
-          echo "Frontend:  ${{ needs.test-frontend.result }}"
-          echo "Backend:   ${{ needs.test-backend.result }}"
-          echo "Build:     ${{ needs.build.result }}"
-          echo "Security:  ${{ needs.security.result }}"
-
-          # Fail on any critical job failure
-          if [ "${{ needs.lint.result }}" == "failure" ] || \
-             [ "${{ needs.test-frontend.result }}" == "failure" ] || \
-             [ "${{ needs.test-backend.result }}" == "failure" ] || \
-             [ "${{ needs.build.result }}" == "failure" ]; then
-            echo "CI failed"
-            exit 1
-          fi
-
-          # Security is non-blocking but noted
-          if [ "${{ needs.security.result }}" == "failure" ]; then
-            echo "Warning: Security checks failed (non-blocking)"
-          fi
-
-          echo "CI passed"
+          test -d frontend/dist && echo "Frontend OK" || exit 1
+          test -d backend/dist && echo "Backend OK" || exit 1

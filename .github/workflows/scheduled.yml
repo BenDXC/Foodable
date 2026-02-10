@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: npm audit (full)
+      - name: npm audit
         run: |
           echo "=== Frontend ==="
           cd frontend && npm audit --json > ../frontend-audit.json || true && cd ..
@@ -107,31 +107,55 @@ jobs:
 
       - name: Check outdated packages
         working-directory: ${{ matrix.workspace }}
-        run: |
-          npm outdated || true
-          npm outdated --json > outdated.json || true
+        run: npm outdated --json > outdated.json || true
 
-      - name: Create issue if updates available
+      - name: Create or update dependency issue
         uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
             const workspace = '${{ matrix.workspace }}';
             try {
-              const outdated = JSON.parse(fs.readFileSync(`${workspace}/outdated.json`, 'utf8'));
+              const raw = fs.readFileSync(`${workspace}/outdated.json`, 'utf8').trim();
+              if (!raw || raw === '{}') return;
+              const outdated = JSON.parse(raw);
               const pkgs = Object.keys(outdated);
-              if (pkgs.length > 0) {
-                const list = pkgs.slice(0, 15).map(p =>
-                  `- \`${p}\`: ${outdated[p].current} → ${outdated[p].latest}`
-                ).join('\n');
-                const extra = pkgs.length > 15 ? `\n\n...and ${pkgs.length - 15} more` : '';
+              if (pkgs.length === 0) return;
+
+              const title = `deps(${workspace}): outdated packages`;
+              const list = pkgs.slice(0, 20).map(p =>
+                `- \`${p}\`: ${outdated[p].current} → ${outdated[p].latest}`
+              ).join('\n');
+              const extra = pkgs.length > 20 ? `\n\n...and ${pkgs.length - 20} more` : '';
+              const body = `## Outdated packages in ${workspace}\n\n${list}${extra}\n\n_Last checked: ${new Date().toISOString()}_`;
+
+              // Check for existing open issue with the same title
+              const { data: existing } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: `dependencies,${workspace}`,
+                per_page: 10
+              });
+              const match = existing.find(i => i.title === title);
+
+              if (match) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: match.number,
+                  body: body
+                });
+                console.log(`Updated existing issue #${match.number}`);
+              } else {
                 await github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  title: `deps(${workspace}): ${pkgs.length} outdated packages`,
-                  body: `## Outdated packages in ${workspace}\n\n${list}${extra}`,
+                  title: title,
+                  body: body,
                   labels: ['dependencies', workspace]
                 });
+                console.log('Created new issue');
               }
             } catch (e) {
               console.log('No outdated packages or error:', e.message);
@@ -143,6 +167,20 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: foodable_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     strategy:
       fail-fast: false
@@ -166,23 +204,22 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps ${{ matrix.browser }}
 
-      - name: Build backend
+      - name: Build and start backend
         working-directory: backend
-        run: npm run build
-
-      - name: Start backend
-        working-directory: backend
-        run: npm start &
+        run: |
+          npm run build
+          npm start &
         env:
           NODE_ENV: test
-          DB_HOST: localhost
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
           DB_USER: root
-          DB_PASSWORD: test
+          DB_PASSWORD: test_password
           DB_NAME: foodable_test
           JWT_SECRET: test-secret
           PORT: 8080
 
-      - name: Build & serve frontend
+      - name: Build and serve frontend
         working-directory: frontend
         run: |
           npm run build
@@ -192,8 +229,8 @@ jobs:
 
       - name: Wait for servers
         run: |
-          timeout 60 bash -c 'until curl -sf http://localhost:5173 2>/dev/null; do sleep 2; done' || echo "Frontend not ready"
           timeout 60 bash -c 'until curl -sf http://localhost:8080/api/v1/health 2>/dev/null; do sleep 2; done' || echo "Backend not ready"
+          timeout 60 bash -c 'until curl -sf http://localhost:5173 2>/dev/null; do sleep 2; done' || echo "Frontend not ready"
 
       - name: Run Playwright tests
         working-directory: frontend
@@ -227,11 +264,10 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install & build frontend
-        working-directory: frontend
+      - name: Install and build frontend
         run: |
-          npm install
-          npm run build
+          npm ci
+          cd frontend && npm run build
 
       - name: Start preview server
         working-directory: frontend
