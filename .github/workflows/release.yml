@@ -2,18 +2,19 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: write
-  issues: write
-  pull-requests: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
-    name: Create Release
+    name: Semantic Release
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -31,173 +32,32 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
+          node-version: '20'
           cache: 'npm'
-          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Verify conventional commits
-        run: |
-          echo "Checking recent commits for conventional format..."
-          git log --pretty=format:"%s" -10
 
       - name: Semantic Release
         id: semantic
         uses: cycjimmy/semantic-release-action@v6
         with:
-          semantic_version: 19
           extra_plugins: |
             @semantic-release/changelog@6
             @semantic-release/git@10
             conventional-changelog-conventionalcommits@7
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create release summary
+      - name: Release summary
         if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          echo "New release created!"
-          echo "Version: ${{ steps.semantic.outputs.new_release_version }}"
-          echo "Release notes: ${{ steps.semantic.outputs.new_release_notes }}"
+        run: echo "Released v${{ steps.semantic.outputs.new_release_version }}"
 
-      - name: Output release info
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          cat << EOF > release-info.txt
-          Release: v${{ steps.semantic.outputs.new_release_version }}
-          Published: $(date)
-          Commit: ${{ github.sha }}
-          EOF
-
-      - name: Upload release info
-        if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/upload-artifact@v6
-        with:
-          name: release-info
-          path: release-info.txt
-          retention-days: 90
-
-  deploy-release:
-    name: Deploy Release
+  upload-assets:
+    name: Upload Release Assets
     needs: release
     if: needs.release.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          ref: v${{ needs.release.outputs.new_release_version }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build frontend
-        working-directory: frontend
-        run: npm run build
-        env:
-          NODE_ENV: production
-          VITE_API_BASE_URL: ${{ secrets.PRODUCTION_API_URL }}
-
-      - name: Build backend
-        working-directory: backend
-        run: npm run build
-
-      - name: Create deployment package
-        run: |
-          mkdir -p release-package
-          cp -r frontend/dist release-package/frontend
-          cp -r backend/dist release-package/backend
-          tar -czf foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz release-package/
-
-      - name: Upload release assets to existing release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.release.outputs.new_release_version }}
-          files: |
-            foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz
-          fail_on_unmatched_files: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Trigger production deployment
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            console.log('Triggering production deployment for v${{ needs.release.outputs.new_release_version }}');
-            
-            try {
-              await github.rest.actions.createWorkflowDispatch({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                workflow_id: 'deploy.yml',
-                ref: 'main',
-                inputs: {
-                  environment: 'production'
-                }
-              });
-              console.log('Deployment workflow triggered');
-            } catch (error) {
-              console.log('Could not trigger deployment:', error.message);
-              console.log('You can manually deploy using: gh workflow run deploy.yml -f environment=production');
-            }
-
-  notify:
-    name: Release Notifications
-    needs: [release, deploy-release]
-    if: needs.release.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-      TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
-
-    steps:
-      - name: Send Slack notification
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: custom
-          custom_payload: |
-            {
-              text: "New Release Published!",
-              attachments: [{
-                color: 'good',
-                text: `Version v${{ needs.release.outputs.new_release_version }} has been released!\n\nView release: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}`
-              }]
-            }
-        continue-on-error: true
-
-      - name: Create Discord notification
-        if: env.DISCORD_WEBHOOK != ''
-        run: |
-          curl -X POST "${{ env.DISCORD_WEBHOOK }}" \
-            -H "Content-Type: application/json" \
-            -d '{
-              "embeds": [{
-                "title": "New Release: v${{ needs.release.outputs.new_release_version }}",
-                "description": "A new version has been released!",
-                "color": 3066993,
-                "url": "https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}"
-              }]
-            }'
-        continue-on-error: true
-
-      - name: Tweet release announcement
-        if: env.TWITTER_API_KEY != ''
-        run: |
-          echo "📢 New release announcement would be posted to Twitter"
-          echo "Version: v${{ needs.release.outputs.new_release_version }}"
-        continue-on-error: true
+    uses: ./.github/workflows/deploy.yml
+    with:
+      version: v${{ needs.release.outputs.new_release_version }}
+    secrets: inherit
