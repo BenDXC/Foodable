@@ -4,6 +4,7 @@ import cors, { CorsOptions } from 'cors';
 import rateLimit from 'express-rate-limit';
 import { config } from '../config';
 import { logWarn } from '../utils/logger';
+import xss from 'xss';
 
 /**
  * Helmet security middleware configuration
@@ -137,15 +138,16 @@ export const requestLogger = (req: Request, res: Response, next: NextFunction): 
 /**
  * Sanitize request body to prevent XSS
  */
+const sanitizeStringInput = (value: string): string => {
+  // Use a well-tested XSS sanitization library instead of ad-hoc regexes
+  return xss(value);
+};
+
 export const sanitizeInput = (req: Request, res: Response, next: NextFunction): void => {
   if (req.body) {
     Object.keys(req.body).forEach((key) => {
       if (typeof req.body[key] === 'string') {
-        // Remove potential XSS patterns
-        req.body[key] = req.body[key]
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/javascript:/gi, '')
-          .replace(/on\w+\s*=/gi, '');
+        req.body[key] = sanitizeStringInput(req.body[key] as string);
       }
     });
   }
