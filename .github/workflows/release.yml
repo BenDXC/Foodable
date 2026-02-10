@@ -119,28 +119,40 @@ jobs:
           cp -r backend/node_modules release-package/backend/
           tar -czf foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz release-package/
 
-      - name: Upload release assets
+      - name: Upload release assets to existing release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ needs.release.outputs.new_release_version }}
           files: |
             foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz
+          fail_on_unmatched_files: true
+          # Note: This updates the release already created by semantic-release
+          # It does NOT create a new release, just adds assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Trigger deployment workflow
+      - name: Trigger production deployment
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.rest.actions.createWorkflowDispatch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              workflow_id: 'deploy.yml',
-              ref: 'main',
-              inputs: {
-                environment: 'production'
-              }
-            });
+            console.log('Triggering production deployment for v${{ needs.release.outputs.new_release_version }}');
+            
+            try {
+              await github.rest.actions.createWorkflowDispatch({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                workflow_id: 'deploy.yml',
+                ref: 'main',
+                inputs: {
+                  environment: 'production'
+                }
+              });
+              console.log('✅ Deployment workflow triggered');
+            } catch (error) {
+              console.log('⚠️ Could not trigger deployment:', error.message);
+              console.log('You can manually deploy using: gh workflow run deploy.yml -f environment=production');
+            }
 
   notify:
     name: Release Notifications

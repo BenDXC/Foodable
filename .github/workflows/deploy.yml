@@ -1,10 +1,10 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main]
-    tags:
-      - 'v*'
+  # Deploy workflow is triggered by:
+  # 1. Manual dispatch for staging/production
+  # 2. Called by release workflow for production releases
+  # NOTE: Removed tag trigger to avoid conflicts with release.yml
   workflow_dispatch:
     inputs:
       environment:
@@ -14,6 +14,16 @@ on:
         options:
           - staging
           - production
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      version:
+        description: 'Version to deploy'
+        required: false
+        type: string
 
 jobs:
   prepare:
@@ -276,20 +286,34 @@ jobs:
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
         continue-on-error: true
 
-      - name: Create release notes
-        if: needs.prepare.outputs.environment == 'production' && startsWith(github.ref, 'refs/tags/')
+      - name: Add deployment info to release
+        if: needs.prepare.outputs.environment == 'production' && startsWith(needs.prepare.outputs.version, 'v')
         uses: actions/github-script@v6
         with:
           script: |
-            github.rest.repos.createRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: '${{ needs.prepare.outputs.version }}',
-              name: 'Release ${{ needs.prepare.outputs.version }}',
-              body: 'Automated release from CI/CD pipeline',
-              draft: false,
-              prerelease: false
-            });
+            // NOTE: Release is already created by semantic-release workflow
+            // This only updates the existing release with deployment timestamp
+            try {
+              const { data: release } = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: '${{ needs.prepare.outputs.version }}'
+              });
+              
+              if (release && !release.body.includes('Deployed:')) {
+                await github.rest.repos.updateRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id,
+                  body: release.body + '\n\n---\n✅ **Deployed to Production**: ' + new Date().toISOString()
+                });
+                console.log('✅ Updated release with deployment timestamp');
+              } else {
+                console.log('Release already has deployment info or not found');
+              }
+            } catch (error) {
+              console.log('Could not update release:', error.message);
+            }
         continue-on-error: true
 
   rollback:
