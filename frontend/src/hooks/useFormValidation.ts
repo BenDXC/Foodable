@@ -5,7 +5,7 @@ interface ValidationRule<T> {
   message: string;
 }
 
-interface ValidationRules<T> {
+type ValidationRules<T> = {
   [K in keyof T]?: ValidationRule<T[K]>[];
 }
 

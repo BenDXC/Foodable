@@ -68,16 +68,6 @@ jobs:
           path: frontend/coverage
           retention-days: 30
 
-      - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          working-directory: frontend
-          coverage-file: ./coverage/coverage-final.json
-          base-coverage-file: ./coverage/coverage-final.json
-          skip-step: all
-          annotations: failed-tests
-
   test-results:
     name: Publish Frontend Test Results
     needs: test
@@ -90,6 +80,7 @@ jobs:
         with:
           name: frontend-coverage-20.x
           path: coverage
+        continue-on-error: true
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -97,3 +88,4 @@ jobs:
         with:
           files: 'coverage/**/*.xml'
           check_name: Frontend Test Results
+        continue-on-error: true

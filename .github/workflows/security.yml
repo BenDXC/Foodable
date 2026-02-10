@@ -53,12 +53,12 @@ jobs:
           echo "High vulnerabilities: $HIGH"
           
           if [ "$CRITICAL" -gt "0" ]; then
-            echo "❌ Critical vulnerabilities found!"
+            echo "Critical vulnerabilities found!"
             exit 1
           elif [ "$HIGH" -gt "0" ]; then
-            echo "⚠️ High vulnerabilities found (warning only)"
+            echo "Warning: High vulnerabilities found"
           else
-            echo "✅ No critical or high vulnerabilities"
+            echo "No critical or high vulnerabilities"
           fi
         continue-on-error: true
 
@@ -156,9 +156,11 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Check licenses
         run: |
@@ -186,8 +188,8 @@ jobs:
           echo "Secret Scan: ${{ needs.secret-scan.result }}"
           
           if [ "${{ needs.secret-scan.result }}" == "failure" ]; then
-            echo "❌ Security scan failed - secrets detected!"
+            echo "Security scan failed - secrets detected!"
             exit 1
           else
-            echo "✅ Security scans completed"
+            echo "Security scans completed"
           fi

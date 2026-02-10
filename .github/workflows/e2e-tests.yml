@@ -30,13 +30,18 @@ jobs:
         with:
           node-version: '20.x'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
-      - name: Install root dependencies
-        run: npm install
+      - name: Install all dependencies
+        run: npm ci
 
       - name: Install Playwright browsers
         working-directory: frontend
         run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
 
       - name: Start backend server
         working-directory: backend
@@ -54,6 +59,12 @@ jobs:
           JWT_SECRET: test-secret
           PORT: 8080
 
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
+
       - name: Start frontend server
         working-directory: frontend
         run: |
@@ -61,18 +72,14 @@ jobs:
           npm run build
           npx vite preview --port 5173 &
           sleep 5
-        env:
-          VITE_API_BASE_URL: http://localhost:8080
 
       - name: Wait for servers to be ready
         run: |
           echo "Waiting for backend..."
-          timeout 60 bash -c 'until curl -f http://localhost:8080/api/v1/health; do sleep 2; done'
-          echo "Backend is ready!"
+          timeout 60 bash -c 'until curl -f http://localhost:8080/api/v1/health 2>/dev/null; do sleep 2; done' || echo "Backend not responding"
           
           echo "Waiting for frontend..."
-          timeout 60 bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
-          echo "Frontend is ready!"
+          timeout 60 bash -c 'until curl -f http://localhost:5173 2>/dev/null; do sleep 2; done' || echo "Frontend not responding"
 
       - name: Run Playwright E2E tests
         working-directory: frontend
@@ -117,6 +124,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         working-directory: frontend
@@ -131,7 +140,7 @@ jobs:
         run: npx vite preview --port 5173 &
 
       - name: Wait for server
-        run: timeout 60 bash -c 'until curl -f http://localhost:5173; do sleep 2; done'
+        run: timeout 60 bash -c 'until curl -f http://localhost:5173 2>/dev/null; do sleep 2; done'
 
       - name: Run accessibility tests
         working-directory: frontend

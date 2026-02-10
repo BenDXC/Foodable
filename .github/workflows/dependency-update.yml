@@ -56,10 +56,10 @@ jobs:
                 github.rest.issues.create({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
-                  title: `📦 Dependency updates available for ${workspace}`,
+                  title: `Dependency updates available for ${workspace}`,
                   body: `Outdated packages detected in ${workspace}:
                   
-                  ${packages.slice(0, 10).map(pkg => `- ${pkg}: ${outdated[pkg].current} → ${outdated[pkg].latest}`).join('\n')}
+                  ${packages.slice(0, 10).map(pkg => `- ${pkg}: ${outdated[pkg].current} -> ${outdated[pkg].latest}`).join('\n')}
                   
                   ${packages.length > 10 ? `\n... and ${packages.length - 10} more` : ''}
                   

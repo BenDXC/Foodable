@@ -129,7 +129,6 @@ jobs:
           name: backend-build
           path: |
             backend/dist
-            backend/node_modules
             backend/package.json
           retention-days: 7
 
@@ -159,6 +158,8 @@ jobs:
         run: |
           echo "Deploying to Vercel..."
           echo "url=https://foodable.vercel.app" >> $GITHUB_OUTPUT
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         continue-on-error: true
 
       - name: Deploy to Netlify (if configured)
@@ -182,7 +183,7 @@ jobs:
 
       - name: Deployment success notification
         run: |
-          echo "✅ Frontend deployed to ${{ needs.prepare.outputs.environment }}"
+          echo "Frontend deployed to ${{ needs.prepare.outputs.environment }}"
           echo "Version: ${{ needs.prepare.outputs.version }}"
 
   deploy-backend:
@@ -215,6 +216,7 @@ jobs:
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           appdir: backend
         env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
           HD_NODE_ENV: production
           HD_JWT_SECRET: ${{ secrets.JWT_SECRET }}
           HD_DB_HOST: ${{ secrets.DB_HOST }}
@@ -227,7 +229,8 @@ jobs:
         if: env.RAILWAY_TOKEN != ''
         run: |
           echo "Deploying to Railway..."
-          # Railway deployment would go here
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         continue-on-error: true
 
       - name: Deploy via SSH (if configured)
@@ -244,11 +247,13 @@ jobs:
             npm install --production
             npm run build
             pm2 restart foodable-api
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         continue-on-error: true
 
       - name: Deployment success notification
         run: |
-          echo "✅ Backend deployed to ${{ needs.prepare.outputs.environment }}"
+          echo "Backend deployed to ${{ needs.prepare.outputs.environment }}"
           echo "Version: ${{ needs.prepare.outputs.version }}"
 
   post-deploy:
@@ -267,16 +272,19 @@ jobs:
           echo "Running health checks..."
           
           # Check backend health (if URL available)
-          if [ -n "${{ secrets.BACKEND_URL }}" ]; then
+          if [ -n "$BACKEND_URL" ]; then
             echo "Checking backend health..."
-            curl -f ${{ secrets.BACKEND_URL }}/api/v1/health || echo "Backend health check failed"
+            curl -f "$BACKEND_URL/api/v1/health" || echo "Backend health check failed"
           fi
           
           # Check frontend availability (if URL available)
-          if [ -n "${{ secrets.FRONTEND_URL }}" ]; then
+          if [ -n "$FRONTEND_URL" ]; then
             echo "Checking frontend availability..."
-            curl -f ${{ secrets.FRONTEND_URL }} || echo "Frontend check failed"
+            curl -f "$FRONTEND_URL" || echo "Frontend check failed"
           fi
+        env:
+          BACKEND_URL: ${{ secrets.BACKEND_URL }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
 
       - name: Send deployment notification
         if: always()
@@ -297,8 +305,6 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            // NOTE: Release is already created by semantic-release workflow
-            // This only updates the existing release with deployment timestamp
             try {
               const { data: release } = await github.rest.repos.getReleaseByTag({
                 owner: context.repo.owner,
@@ -311,9 +317,9 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   release_id: release.id,
-                  body: release.body + '\n\n---\n✅ **Deployed to Production**: ' + new Date().toISOString()
+                  body: release.body + '\n\n---\nDeployed to Production: ' + new Date().toISOString()
                 });
-                console.log('✅ Updated release with deployment timestamp');
+                console.log('Updated release with deployment timestamp');
               } else {
                 console.log('Release already has deployment info or not found');
               }
@@ -331,7 +337,7 @@ jobs:
     steps:
       - name: Rollback notification
         run: |
-          echo "❌ Deployment failed - manual rollback may be required"
+          echo "Deployment failed - manual rollback may be required"
           echo "Environment: ${{ needs.prepare.outputs.environment }}"
           echo "Version: ${{ needs.prepare.outputs.version }}"
 
@@ -342,7 +348,7 @@ jobs:
             github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: '🚨 Deployment Failed - ${{ needs.prepare.outputs.environment }}',
+              title: 'Deployment Failed - ${{ needs.prepare.outputs.environment }}',
               body: `Deployment to ${{ needs.prepare.outputs.environment }} failed.
               
               **Details:**

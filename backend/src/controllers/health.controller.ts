@@ -6,7 +6,7 @@ import { sendSuccess } from '../utils/response';
 /**
  * Health check endpoint
  */
-export const healthCheck = async (req: Request, res: Response): Promise<void> => {
+export const healthCheck = async (_req: Request, res: Response): Promise<void> => {
   const health = {
     uptime: process.uptime(),
     timestamp: new Date().toISOString(),
@@ -21,7 +21,7 @@ export const healthCheck = async (req: Request, res: Response): Promise<void> =>
 /**
  * Detailed health check with database status
  */
-export const detailedHealthCheck = async (req: Request, res: Response): Promise<void> => {
+export const detailedHealthCheck = async (_req: Request, res: Response): Promise<void> => {
   const startTime = Date.now();
   
   // Check database connection

@@ -3,7 +3,7 @@ import helmet from 'helmet';
 import cors, { CorsOptions } from 'cors';
 import rateLimit from 'express-rate-limit';
 import { config } from '../config';
-import { logWarn } from '../utils/logger';
+import { logWarn, logInfo } from '../utils/logger';
 import xss from 'xss';
 
 /**
@@ -143,7 +143,7 @@ const sanitizeStringInput = (value: string): string => {
   return xss(value);
 };
 
-export const sanitizeInput = (req: Request, res: Response, next: NextFunction): void => {
+export const sanitizeInput = (req: Request, _res: Response, next: NextFunction): void => {
   if (req.body) {
     Object.keys(req.body).forEach((key) => {
       if (typeof req.body[key] === 'string') {
@@ -166,10 +166,11 @@ export const validateContentType = (
     const contentType = req.get('content-type');
     
     if (!contentType || !contentType.includes('application/json')) {
-      return res.status(415).json({
+      res.status(415).json({
         success: false,
         message: 'Content-Type must be application/json',
       });
+      return;
     }
   }
   next();
@@ -179,7 +180,7 @@ export const validateContentType = (
  * Add security headers
  */
 export const securityHeaders = (
-  req: Request,
+  _req: Request,
   res: Response,
   next: NextFunction
 ): void => {

@@ -43,10 +43,10 @@ jobs:
         working-directory: frontend
         run: |
           if [ ! -d "dist" ]; then
-            echo "❌ Build failed - dist directory not created"
+            echo "Build failed - dist directory not created"
             exit 1
           fi
-          echo "✅ Build successful"
+          echo "Build successful"
           ls -lah dist/
 
       - name: Analyze bundle size
@@ -67,9 +67,9 @@ jobs:
         working-directory: frontend
         run: |
           if ls dist/assets/*.map 1> /dev/null 2>&1; then
-            echo "⚠️ Warning: Source maps found in production build"
+            echo "Warning: Source maps found in production build"
           else
-            echo "✅ No source maps in production build"
+            echo "No source maps in production build"
           fi
 
   build-backend:
@@ -103,10 +103,10 @@ jobs:
         working-directory: backend
         run: |
           if [ ! -d "dist" ]; then
-            echo "❌ Build failed - dist directory not created"
+            echo "Build failed - dist directory not created"
             exit 1
           fi
-          echo "✅ Build successful"
+          echo "Build successful"
           ls -lah dist/
 
       - name: Verify TypeScript compilation
@@ -144,8 +144,8 @@ jobs:
           
           if [ "${{ needs.build-frontend.result }}" != "success" ] || \
              [ "${{ needs.build-backend.result }}" != "success" ]; then
-            echo "❌ Build failed"
+            echo "Build failed"
             exit 1
           else
-            echo "✅ All builds successful"
+            echo "All builds successful"
           fi
