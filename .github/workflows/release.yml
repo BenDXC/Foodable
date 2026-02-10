@@ -56,88 +56,11 @@ jobs:
         if: steps.semantic.outputs.new_release_published == 'true'
         run: echo "Released v${{ steps.semantic.outputs.new_release_version }}"
 
-  deploy-production:
-    name: Deploy Release
+  upload-assets:
+    name: Upload Release Assets
     needs: release
     if: needs.release.outputs.new_release_published == 'true'
     uses: ./.github/workflows/deploy.yml
     with:
-      environment: production
-      version: ${{ needs.release.outputs.new_release_version }}
+      version: v${{ needs.release.outputs.new_release_version }}
     secrets: inherit
-
-  release-assets:
-    name: Upload Release Assets
-    needs: release
-    if: needs.release.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          ref: v${{ needs.release.outputs.new_release_version }}
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install and build
-        run: |
-          npm ci
-          cd frontend && npm run build && cd ..
-          cd backend && npm run build && cd ..
-        env:
-          NODE_ENV: production
-          VITE_API_BASE_URL: ${{ secrets.PRODUCTION_API_URL }}
-
-      - name: Create release package
-        run: |
-          mkdir -p release-package/frontend release-package/backend
-          cp -r frontend/dist/* release-package/frontend/
-          cp -r backend/dist/* release-package/backend/
-          tar -czf foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz release-package/
-
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ needs.release.outputs.new_release_version }}
-          files: foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  notify:
-    name: Release Notification
-    needs: [release, deploy-production]
-    if: always() && needs.release.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Slack notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          custom_payload: |
-            {
-              text: "Released v${{ needs.release.outputs.new_release_version }}",
-              attachments: [{
-                color: '${{ needs.deploy-production.result == 'success' && 'good' || 'danger' }}',
-                text: "Deploy: ${{ needs.deploy-production.result }}\nhttps://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}"
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        continue-on-error: true
-
-      - name: Discord notification
-        if: env.DISCORD_WEBHOOK != ''
-        run: |
-          curl -sf -X POST "$DISCORD_WEBHOOK" \
-            -H "Content-Type: application/json" \
-            -d '{"embeds":[{"title":"Release v${{ needs.release.outputs.new_release_version }}","color":3066993,"url":"https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}"}]}'
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-        continue-on-error: true

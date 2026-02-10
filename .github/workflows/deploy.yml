@@ -3,64 +3,29 @@ name: Deploy
 on:
   workflow_dispatch:
     inputs:
-      environment:
-        description: 'Deployment environment'
+      version:
+        description: 'Release version tag (e.g. v1.2.3)'
         required: true
-        type: choice
-        options:
-          - staging
-          - production
+        type: string
   workflow_call:
     inputs:
-      environment:
-        description: 'Deployment environment'
+      version:
+        description: 'Release version tag'
         required: true
         type: string
-      version:
-        description: 'Version to deploy'
-        required: false
-        type: string
+
+permissions:
+  contents: write
 
 concurrency:
-  group: deploy-${{ inputs.environment || github.event.inputs.environment }}
+  group: deploy
   cancel-in-progress: false
 
 jobs:
-  prepare:
-    name: Prepare Deployment
+  build-and-release:
+    name: Build & Create GitHub Release
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    outputs:
-      environment: ${{ steps.set-env.outputs.environment }}
-      version: ${{ steps.set-version.outputs.version }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-
-      - name: Determine environment
-        id: set-env
-        run: |
-          ENV="${{ inputs.environment || github.event.inputs.environment || 'staging' }}"
-          echo "environment=$ENV" >> $GITHUB_OUTPUT
-
-      - name: Set version
-        id: set-version
-        run: |
-          if [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
-            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
-          fi
-
-  build-and-deploy:
-    name: Build & Deploy to ${{ needs.prepare.outputs.environment }}
-    needs: prepare
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    environment:
-      name: ${{ needs.prepare.outputs.environment }}
+    timeout-minutes: 15
 
     steps:
       - name: Checkout code
@@ -80,129 +45,24 @@ jobs:
         run: npm run build
         env:
           NODE_ENV: production
-          VITE_API_BASE_URL: ${{ secrets.API_URL }}
 
       - name: Build backend
         working-directory: backend
         run: npm run build
 
-      # --- Frontend Deployment ---
-
-      - name: Deploy frontend to Vercel
-        if: env.VERCEL_TOKEN != ''
-        run: echo "Deploying frontend to Vercel..."
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        continue-on-error: true
-
-      - name: Deploy frontend to Netlify
-        if: env.NETLIFY_AUTH_TOKEN != ''
-        uses: netlify/actions/cli@master
-        with:
-          args: deploy --dir=frontend/dist --prod=${{ needs.prepare.outputs.environment == 'production' }}
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        continue-on-error: true
-
-      - name: Deploy frontend to GitHub Pages
-        if: github.ref == 'refs/heads/main' && needs.prepare.outputs.environment == 'production'
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./frontend/dist
-          cname: foodable.example.com
-        continue-on-error: true
-
-      # --- Backend Deployment ---
-
-      - name: Prepare backend production deps
-        working-directory: backend
+      - name: Package release
         run: |
-          rm -rf node_modules
-          npm install --omit=dev
+          mkdir -p release-package/frontend release-package/backend
+          cp -r frontend/dist/* release-package/frontend/
+          cp -r backend/dist/* release-package/backend/
+          tar -czf foodable-${{ inputs.version }}.tar.gz release-package/
 
-      - name: Deploy backend to Heroku
-        if: env.HEROKU_API_KEY != ''
-        uses: akhileshns/heroku-deploy@v3.14.15
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          appdir: backend
+          tag_name: ${{ inputs.version }}
+          name: ${{ inputs.version }}
+          files: foodable-${{ inputs.version }}.tar.gz
+          generate_release_notes: true
         env:
-          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-          HD_NODE_ENV: production
-          HD_JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          HD_DB_HOST: ${{ secrets.DB_HOST }}
-          HD_DB_USER: ${{ secrets.DB_USER }}
-          HD_DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          HD_DB_NAME: ${{ secrets.DB_NAME }}
-        continue-on-error: true
-
-      - name: Deploy backend via SSH
-        if: env.SSH_PRIVATE_KEY != ''
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
-          script: |
-            cd /var/www/foodable-backend
-            git pull origin main
-            npm install --production
-            npm run build
-            pm2 restart foodable-api
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        continue-on-error: true
-
-      - name: Deployment summary
-        run: |
-          echo "Deployed to: ${{ needs.prepare.outputs.environment }}"
-          echo "Version: ${{ needs.prepare.outputs.version }}"
-
-  post-deploy:
-    name: Post-Deployment Checks
-    needs: [prepare, build-and-deploy]
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    if: always()
-
-    steps:
-      - name: Health checks
-        run: |
-          if [ -n "${{ secrets.BACKEND_URL }}" ]; then
-            curl -sf "${{ secrets.BACKEND_URL }}/api/v1/health" && echo "Backend OK" || echo "Backend check failed"
-          fi
-          if [ -n "${{ secrets.FRONTEND_URL }}" ]; then
-            curl -sf "${{ secrets.FRONTEND_URL }}" && echo "Frontend OK" || echo "Frontend check failed"
-          fi
-
-      - name: Notify on failure
-        if: failure()
-        uses: actions/github-script@v8
-        with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: `Deployment Failed - ${{ needs.prepare.outputs.environment }}`,
-              body: `Deployment to **${{ needs.prepare.outputs.environment }}** failed.\n\n` +
-                    `- Version: ${{ needs.prepare.outputs.version }}\n` +
-                    `- Run: ${context.runNumber}\n\n` +
-                    `Please investigate and rollback if necessary.`,
-              labels: ['deployment', 'incident']
-            });
-        continue-on-error: true
-
-      - name: Slack notification
-        if: always()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          text: "Deploy to ${{ needs.prepare.outputs.environment }}: ${{ needs.build-and-deploy.result }} (v${{ needs.prepare.outputs.version }})"
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        continue-on-error: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
