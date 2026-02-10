@@ -1,0 +1,57 @@
+# Auto-labeling configuration for Pull Requests
+
+# Frontend related changes
+frontend:
+  - frontend/**/*
+
+# Backend related changes
+backend:
+  - backend/**/*
+
+# Documentation changes
+documentation:
+  - '**/*.md'
+  - docs/**/*
+
+# Configuration changes
+config:
+  - '**/*.json'
+  - '**/*.yml'
+  - '**/*.yaml'
+  - '**/.*rc'
+  - '**/.*rc.json'
+
+# Tests
+tests:
+  - '**/*.test.ts'
+  - '**/*.test.tsx'
+  - '**/*.spec.ts'
+  - '**/__tests__/**'
+
+# CI/CD
+ci:
+  - .github/**/*
+
+# Dependencies
+dependencies:
+  - '**/package.json'
+  - '**/package-lock.json'
+
+# TypeScript
+typescript:
+  - '**/*.ts'
+  - '**/*.tsx'
+  - '**/tsconfig.json'
+
+# Security
+security:
+  - '**/auth*'
+  - '**/security*'
+  - '**/*password*'
+  - '**/*token*'
+
+# Database
+database:
+  - '**/database*'
+  - '**/*migration*'
+  - '**/*schema*'

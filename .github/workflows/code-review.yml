@@ -1,0 +1,99 @@
+name: Automated Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  review-dog:
+    name: Automated Code Review
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run ESLint with reviewdog
+        uses: reviewdog/action-eslint@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          eslint_flags: 'frontend/src/**/*.{ts,tsx} backend/src/**/*.ts'
+          fail_on_error: false
+          filter_mode: added
+
+      - name: Run TypeScript check with reviewdog
+        uses: EPMatt/reviewdog-action-tsc@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: github-pr-review
+          level: warning
+          fail_on_error: false
+
+  complexity-analysis:
+    name: Code Complexity Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Analyze code complexity
+        run: |
+          npx complexity-report frontend/src backend/src || true
+        continue-on-error: true
+
+      - name: Comment complexity on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '## 📊 Code Complexity Analysis\n\nComplexity analysis completed. Review logs for details.'
+            });
+        continue-on-error: true
+
+  code-duplication:
+    name: Check Code Duplication
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Check for duplicated code
+        run: |
+          npx jscpd frontend/src backend/src --reporters console,html || true
+        continue-on-error: true
+
+      - name: Upload duplication report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: duplication-report
+          path: ./report
+          retention-days: 7

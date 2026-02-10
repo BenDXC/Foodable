@@ -1,0 +1,61 @@
+{
+  "name": "foodable-monorepo",
+  "version": "1.0.0",
+  "description": "Foodable - Full-stack food donation platform (Frontend + Backend)",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "release": {
+    "branches": ["main"]
+  },
+  "scripts": {
+    "dev": "npm-run-all --parallel dev:frontend dev:backend",
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build": "npm-run-all build:frontend build:backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "test": "npm-run-all test:frontend test:backend",
+    "test:frontend": "npm run test --workspace=frontend",
+    "test:backend": "npm run test --workspace=backend",
+    "lint": "npm-run-all lint:frontend lint:backend",
+    "lint:frontend": "npm run lint --workspace=frontend",
+    "lint:backend": "npm run lint --workspace=backend",
+    "start:frontend": "npm run preview --workspace=frontend",
+    "start:backend": "npm start --workspace=backend",
+    "clean": "npm-run-all clean:frontend clean:backend",
+    "clean:frontend": "cd frontend && rm -rf node_modules dist",
+    "clean:backend": "cd backend && rm -rf node_modules dist logs",
+    "install:all": "npm install && npm install --workspaces",
+    "postinstall": "npm install --workspaces"
+  },
+  "keywords": [
+    "foodable",
+    "food-donation",
+    "charity",
+    "monorepo",
+    "full-stack",
+    "react",
+    "express",
+    "typescript"
+  ],
+  "author": "Foodable Team",
+  "license": "MIT",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "conventional-changelog-conventionalcommits": "^7.0.2",
+    "semantic-release": "^22.0.12"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BenDXC/Foodable-Web-Dev.git"
+  }
+}

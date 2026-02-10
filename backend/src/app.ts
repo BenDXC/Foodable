@@ -1,0 +1,100 @@
+import express, { Application, Request, Response, NextFunction } from 'express';
+import 'express-async-errors';
+import compression from 'compression';
+import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
+import { config } from './config';
+import routes from './routes';
+import {
+  errorHandler,
+  notFoundHandler,
+  handleUncaughtErrors,
+} from './middleware/errorHandler';
+import {
+  helmetConfig,
+  corsMiddleware,
+  apiRateLimiter,
+  requestLogger,
+  sanitizeInput,
+  securityHeaders,
+} from './middleware/security';
+import requestIdMiddleware from './middleware/requestId';
+
+// Handle uncaught errors
+handleUncaughtErrors();
+
+// CSRF protection setup (uses cookies to store the secret)
+const csrfProtection = csurf({ cookie: true });
+
+// Create Express app
+const app: Application = express();
+
+// Trust proxy (important for rate limiting and getting correct IP)
+app.set('trust proxy', 1);
+
+// Request ID tracking (must be first)
+app.use(requestIdMiddleware);
+
+// Security middleware
+app.use(helmetConfig);
+app.use(corsMiddleware);
+app.use(securityHeaders);
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// Compression middleware
+app.use(compression());
+
+// Request logging (after request ID)
+app.use(requestLogger);
+
+// Sanitize input
+app.use(sanitizeInput);
+
+// CSRF middleware:
+// - For unsafe methods (POST, PUT, PATCH, DELETE), enforce CSRF protection.
+// - For safe methods, expose the token if generated without enforcing it.
+app.use(`/api/${config.API_VERSION}`, (req: Request, res: Response, next: NextFunction) => {
+  const method = req.method.toUpperCase();
+  const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+  if (!unsafeMethods.includes(method)) {
+    return next();
+  }
+
+  return csrfProtection(req, res, next);
+});
+
+// Rate limiting
+app.use(`/api/${config.API_VERSION}`, apiRateLimiter);
+
+// API routes
+app.use(`/api/${config.API_VERSION}`, routes);
+
+// Root endpoint
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'Foodable API',
+    version: config.API_VERSION,
+    documentation: `/api/${config.API_VERSION}/health`,
+    endpoints: {
+      health: `/api/${config.API_VERSION}/health`,
+      detailedHealth: `/api/${config.API_VERSION}/health/detailed`,
+      auth: `/api/${config.API_VERSION}/auth`,
+      users: `/api/${config.API_VERSION}/users`,
+      donations: `/api/${config.API_VERSION}/donations`,
+    },
+  });
+});
+
+// 404 handler
+app.use(notFoundHandler);
+
+// Global error handler (must be last)
+app.use(errorHandler);
+
+export default app;
