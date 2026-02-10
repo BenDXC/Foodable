@@ -1,5 +1,14 @@
 # Foodable - Food Donation Platform 🍎
 
+[![CI Pipeline](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/ci.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/ci.yml)
+[![Frontend Tests](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/frontend-tests.yml)
+[![Backend Tests](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/backend-tests.yml)
+[![E2E Tests](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/e2e-tests.yml)
+[![Security](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/security.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/security.yml)
+[![Linting](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/linting.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/linting.yml)
+[![Build](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/build.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/BenDXC/Foodable-Web-Dev/branch/main/graph/badge.svg)](https://codecov.io/gh/BenDXC/Foodable-Web-Dev)
+
 A full-stack web application connecting food donors with food banks and receivers, helping reduce food waste while supporting those in need.
 
 ## 📁 Project Structure (Monorepo)
@@ -317,9 +326,72 @@ npm run test:e2e:ui
 ```bash
 cd backend
 
-# Run tests (when implemented)
+# Run all tests with coverage
 npm test
+
+# Run in watch mode
+npm run test:watch
+
+# Run unit tests only
+npm run test:unit
+
+# Run integration tests only
+npm run test:integration
 ```
+
+## 🔄 CI/CD Pipeline
+
+### Automated Workflows
+
+The project includes **11 independent GitHub Actions workflows**:
+
+#### Testing Pipelines
+- **Frontend Tests** - Unit & component tests (3 Node versions)
+- **Backend Tests** - Unit & integration tests with MySQL
+- **E2E Tests** - Playwright across 3 browsers (sharded)
+
+#### Quality Pipelines
+- **Linting** - ESLint, Prettier, TypeScript checks
+- **Code Review** - Automated reviews, complexity analysis
+- **Performance** - Lighthouse, bundle size, load testing
+
+#### Security Pipelines
+- **Security Scan** - npm audit, Snyk, CodeQL, secret detection
+
+#### Build & Deploy Pipelines
+- **Build** - Production builds for frontend & backend
+- **Deploy** - Multi-environment deployment
+- **CI Pipeline** - Main orchestrator
+- **PR Validation** - PR title, size, conflicts
+
+### Running Workflows
+
+```bash
+# View all workflows
+gh workflow list
+
+# Run specific workflow
+gh workflow run frontend-tests.yml
+gh workflow run backend-tests.yml
+
+# View workflow status
+gh run list --workflow=ci.yml
+
+# View detailed logs
+gh run view <run-id> --log
+```
+
+### Quality Gates
+
+All PRs must pass:
+- ✅ Frontend tests
+- ✅ Backend tests
+- ✅ Linting
+- ✅ Build
+- ✅ TypeScript checks
+- ✅ Coverage thresholds (70% backend)
+
+See [CI/CD Documentation](./docs/CICD_DOCUMENTATION.md) for complete details.
 
 ## 📦 Available Scripts
 

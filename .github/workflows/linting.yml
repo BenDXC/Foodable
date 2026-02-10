@@ -1,0 +1,146 @@
+name: Code Linting
+
+on:
+  push:
+    branches: [main, develop, 'feat/**']
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  frontend-lint:
+    name: Frontend ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: frontend
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Annotate code linting results
+        uses: ataylorme/eslint-annotate-action@v2
+        if: always()
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          report-json: frontend/eslint-report.json
+        continue-on-error: true
+
+  backend-lint:
+    name: Backend ESLint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: backend
+        run: npm run lint
+
+  prettier-check:
+    name: Prettier Code Formatting
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Check frontend formatting
+        working-directory: frontend
+        run: npx prettier --check "src/**/*.{ts,tsx,js,jsx,json,css}"
+        continue-on-error: true
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Check backend formatting
+        working-directory: backend
+        run: npx prettier --check "src/**/*.{ts,js,json}"
+        continue-on-error: true
+
+  typescript-check:
+    name: TypeScript Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install all dependencies
+        run: npm install
+
+      - name: TypeScript check - Frontend
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: TypeScript check - Backend
+        working-directory: backend
+        run: npx tsc --noEmit
+
+  code-quality:
+    name: Code Quality Summary
+    needs: [frontend-lint, backend-lint, prettier-check, typescript-check]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check all quality jobs
+        run: |
+          echo "Frontend Lint: ${{ needs.frontend-lint.result }}"
+          echo "Backend Lint: ${{ needs.backend-lint.result }}"
+          echo "Prettier Check: ${{ needs.prettier-check.result }}"
+          echo "TypeScript Check: ${{ needs.typescript-check.result }}"
+          
+          if [ "${{ needs.frontend-lint.result }}" != "success" ] || \
+             [ "${{ needs.backend-lint.result }}" != "success" ] || \
+             [ "${{ needs.typescript-check.result }}" != "success" ]; then
+            echo "❌ Code quality checks failed"
+            exit 1
+          else
+            echo "✅ All code quality checks passed"
+          fi

@@ -1,0 +1,73 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    - cron: '0 0 * * 1' # Weekly on Monday
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    name: Check for Dependency Updates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    strategy:
+      matrix:
+        workspace: [frontend, backend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Check for outdated packages
+        working-directory: ${{ matrix.workspace }}
+        run: |
+          echo "Checking outdated packages for ${{ matrix.workspace }}..."
+          npm outdated || true
+          npm outdated --json > outdated.json || true
+
+      - name: Upload outdated report
+        uses: actions/upload-artifact@v3
+        with:
+          name: outdated-${{ matrix.workspace }}
+          path: ${{ matrix.workspace }}/outdated.json
+          retention-days: 7
+
+      - name: Create Dependabot-style PR
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const workspace = '${{ matrix.workspace }}';
+            
+            try {
+              const outdated = JSON.parse(fs.readFileSync(`${workspace}/outdated.json`, 'utf8'));
+              const packages = Object.keys(outdated);
+              
+              if (packages.length > 0) {
+                console.log(`Found ${packages.length} outdated packages in ${workspace}`);
+                
+                // Create issue for manual review
+                github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `📦 Dependency updates available for ${workspace}`,
+                  body: `Outdated packages detected in ${workspace}:
+                  
+                  ${packages.slice(0, 10).map(pkg => `- ${pkg}: ${outdated[pkg].current} → ${outdated[pkg].latest}`).join('\n')}
+                  
+                  ${packages.length > 10 ? `\n... and ${packages.length - 10} more` : ''}
+                  
+                  Please review and update dependencies.`,
+                  labels: ['dependencies', workspace]
+                });
+              }
+            } catch (error) {
+              console.log('No outdated packages found or error reading report');
+            }
+        continue-on-error: true
