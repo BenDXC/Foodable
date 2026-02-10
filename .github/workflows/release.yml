@@ -23,13 +23,13 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.x'
           cache: 'npm'
@@ -44,7 +44,7 @@ jobs:
 
       - name: Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v4
+        uses: cycjimmy/semantic-release-action@v6
         with:
           semantic_version: 19
           extra_plugins: |
@@ -73,7 +73,7 @@ jobs:
 
       - name: Upload release info
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v6
         with:
           name: release-info
           path: release-info.txt
@@ -88,12 +88,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: v${{ needs.release.outputs.new_release_version }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.x'
 
@@ -120,7 +120,7 @@ jobs:
           tar -czf foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz release-package/
 
       - name: Upload release assets to existing release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.release.outputs.new_release_version }}
           files: |
@@ -132,7 +132,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Trigger production deployment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -159,6 +159,10 @@ jobs:
     needs: [release, deploy-release]
     if: needs.release.outputs.new_release_published == 'true'
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
 
     steps:
       - name: Send Slack notification
@@ -174,13 +178,12 @@ jobs:
                 text: `Version v${{ needs.release.outputs.new_release_version }} has been released!\n\nView release: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}`
               }]
             }
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
         continue-on-error: true
 
       - name: Create Discord notification
-        if: secrets.DISCORD_WEBHOOK != ''
+        if: env.DISCORD_WEBHOOK != ''
         run: |
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          curl -X POST "${{ env.DISCORD_WEBHOOK }}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -193,7 +196,7 @@ jobs:
         continue-on-error: true
 
       - name: Tweet release announcement
-        if: secrets.TWITTER_API_KEY != ''
+        if: env.TWITTER_API_KEY != ''
         run: |
           echo "📢 New release announcement would be posted to Twitter"
           echo "Version: v${{ needs.release.outputs.new_release_version }}"
