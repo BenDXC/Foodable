@@ -34,29 +34,34 @@ A comprehensive Express.js backend API built with TypeScript, featuring robust e
 
 ```
 src/
-├── config/           # Configuration files
-│   ├── database.ts   # Database connection and setup
-│   └── index.ts      # Environment configuration
-├── controllers/      # Route controllers
+├── config/              # Configuration files
+│   ├── database.ts      # Database connection and pooling
+│   └── index.ts         # Environment configuration
+├── controllers/         # Route controllers
 │   ├── auth.controller.ts
 │   ├── user.controller.ts
-│   └── donation.controller.ts
-├── middleware/       # Express middleware
-│   ├── auth.ts       # JWT authentication
-│   ├── errorHandler.ts # Error handling
-│   ├── security.ts   # Security middleware
-│   └── validation.ts # Request validation
-├── routes/          # API routes
+│   ├── donation.controller.ts
+│   └── health.controller.ts
+├── middleware/           # Express middleware
+│   ├── auth.ts          # JWT authentication
+│   ├── errorHandler.ts  # Error handling + async wrapper
+│   ├── security.ts      # Helmet, CORS, rate limiting, XSS
+│   ├── validation.ts    # Request validation (express-validator)
+│   └── requestId.ts     # Request ID tracking
+├── routes/              # API routes
 │   ├── auth.routes.ts
 │   ├── user.routes.ts
 │   ├── donation.routes.ts
-│   └── index.ts
-├── types/           # TypeScript type definitions
-│   └── index.ts
-├── utils/           # Utility functions
-│   └── logger.ts    # Winston logger
-├── app.ts           # Express app setup
-└── server.ts        # Server entry point
+│   └── index.ts         # Route aggregator + health endpoints
+├── types/               # TypeScript type definitions
+│   ├── index.ts
+│   └── express.d.ts
+├── utils/               # Utility functions
+│   ├── logger.ts        # Winston logger
+│   ├── response.ts      # Response helpers
+│   └── constants.ts     # Shared constants
+├── app.ts               # Express app setup
+└── server.ts            # Server entry point
 ```
 
 ## Prerequisites
@@ -67,9 +72,9 @@ src/
 
 ## Installation
 
-1. **Clone the repository**
+1. **Navigate to the backend directory**
    ```bash
-   cd "Foodable Website/Back-End/Foodable"
+   cd backend
    ```
 
 2. **Install dependencies**

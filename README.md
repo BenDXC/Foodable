@@ -1,41 +1,41 @@
-# Foodable - Food Donation Platform 🍎
+# Foodable - Food Donation Platform
 
-[![CI Pipeline](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/ci.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/ci.yml)
-[![Frontend Tests](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/frontend-tests.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/frontend-tests.yml)
-[![Backend Tests](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/backend-tests.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/backend-tests.yml)
-[![E2E Tests](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/e2e-tests.yml)
-[![Security](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/security.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/security.yml)
-[![Linting](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/linting.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/linting.yml)
-[![Build](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/build.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/build.yml)
+[![CI](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/ci.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/ci.yml)
+[![Release](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/release.yml/badge.svg)](https://github.com/BenDXC/Foodable-Web-Dev/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/BenDXC/Foodable-Web-Dev/branch/main/graph/badge.svg)](https://codecov.io/gh/BenDXC/Foodable-Web-Dev)
 
-A full-stack web application connecting food donors with food banks and receivers, helping reduce food waste while supporting those in need.
+A full-stack web application connecting food donors with food banks and receivers, helping reduce food waste while supporting those in need. Donors can list surplus food, receivers can browse available food packages, and the platform provides a food bank locator powered by Google Maps.
 
-## 📁 Project Structure (Monorepo)
+## Project Structure
 
 ```
 foodable/
-├── frontend/              # React + TypeScript frontend
+├── frontend/              # React 18 + TypeScript (Vite)
 │   ├── src/
-│   ├── public/
-│   ├── e2e/              # Playwright tests
-│   ├── package.json
-│   └── vite.config.ts
-├── backend/              # Express + TypeScript API
+│   │   ├── Components/    # UI and page components
+│   │   ├── context/       # React Context (auth state)
+│   │   ├── hooks/         # Custom React hooks
+│   │   ├── services/      # API service layer
+│   │   ├── constants/     # App-wide constants & config
+│   │   ├── types/         # TypeScript type definitions
+│   │   └── utils/         # Utility functions
+│   ├── e2e/               # Playwright end-to-end tests
+│   └── public/            # Static assets & images
+├── backend/               # Express + TypeScript API
 │   ├── src/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── routes/
-│   │   ├── config/
-│   │   └── utils/
-│   ├── package.json
-│   └── tsconfig.json
-├── docs/                 # Documentation
-├── package.json          # Root workspace config
-└── README.md            # This file
+│   │   ├── controllers/   # Route handlers
+│   │   ├── middleware/     # Auth, validation, security, error handling
+│   │   ├── routes/        # API route definitions
+│   │   ├── config/        # Database & app configuration
+│   │   ├── types/         # TypeScript type definitions
+│   │   └── utils/         # Logger, response helpers, constants
+│   └── __tests__/         # Unit & integration tests
+├── docs/                  # Project documentation
+├── .github/workflows/     # CI/CD pipeline definitions
+└── package.json           # Root workspace configuration
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -53,11 +53,11 @@ cd Foodable-Web-Dev
 # Install all dependencies (frontend + backend)
 npm install
 
-# Setup environment variables
+# Set up environment variables
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 
-# Configure your .env files with database credentials
+# Edit the .env files with your database credentials and API keys
 ```
 
 ### Development
@@ -67,7 +67,7 @@ cp frontend/.env.example frontend/.env
 npm run dev
 
 # Or start them separately:
-npm run dev:frontend    # Frontend at http://localhost:5173
+npm run dev:frontend    # Frontend at http://localhost:3000
 npm run dev:backend     # Backend at http://localhost:8080
 ```
 
@@ -88,10 +88,10 @@ npm run build:backend
 # Run all tests (frontend + backend)
 npm test
 
-# Run frontend tests only
+# Frontend tests only
 npm run test:frontend
 
-# Run backend tests only
+# Backend tests only
 npm run test:backend
 ```
 
@@ -108,155 +108,139 @@ npm run lint:frontend
 npm run lint:backend
 ```
 
-## 🎯 Features
+## Features
 
 ### Frontend
-- ✅ Modern React 18 with TypeScript
-- ✅ Vite for fast development
-- ✅ React Router for navigation
-- ✅ Axios for API calls
-- ✅ React Hot Toast for notifications
-- ✅ Comprehensive accessibility (ARIA, WCAG 2.1)
-- ✅ Playwright E2E tests
-- ✅ Responsive design
-- ✅ Protected routes with authentication
+
+- **React 18** with TypeScript and Vite for fast development
+- **Lazy-loaded routes** with React Router v6 for code splitting
+- **Google Maps integration** for food bank locations and place search
+- **Contact form** powered by EmailJS
+- **Authentication flow** with JWT tokens and protected routes
+- **User roles**: Donor, Receiver, and Food Bank views
+- **Rewards system** for active donors
+- **Toast notifications** via React Hot Toast
+- **Accessibility** support with ARIA labels (WCAG 2.1)
+- **Error boundaries** for graceful error handling
+- **Playwright E2E tests** covering navigation, forms, auth, and UI components
+- **Responsive design** with custom CSS
 
 ### Backend
-- ✅ Express.js with TypeScript
-- ✅ JWT authentication with refresh tokens
-- ✅ MySQL database with connection pooling
-- ✅ Comprehensive error handling
-- ✅ Request validation with express-validator
-- ✅ Security middleware (Helmet, CORS, rate limiting)
-- ✅ Winston logging with request tracing
-- ✅ Health check endpoints
-- ✅ RESTful API design
-- ✅ Async/await patterns throughout
 
-## 📚 API Documentation
+- **Express.js** REST API with TypeScript
+- **JWT authentication** with access tokens, refresh tokens, and password changes
+- **MySQL** database with connection pooling
+- **Request validation** using express-validator
+- **Security middleware**: Helmet, CORS, rate limiting, CSRF protection, XSS sanitization, bcrypt password hashing
+- **Structured logging** with Winston and request ID tracing
+- **Compression** for response payloads
+- **Health check endpoints** (basic and detailed)
+- **Async error handling** throughout with express-async-errors
+- **Unit and integration tests** with Jest and Supertest
 
-The backend API is fully documented. See:
-- [API Documentation](./backend/API_DOCUMENTATION.md)
-- [Backend README](./backend/README.md)
+## API Reference
 
 **Base URL**: `http://localhost:8080/api/v1`
 
-### Quick API Reference
+### Authentication
 
-**Authentication**
-- `POST /auth/register` - Register new user
-- `POST /auth/login` - Login user
-- `POST /auth/logout` - Logout user
-- `GET /auth/profile` - Get user profile
-- `POST /auth/refresh` - Refresh access token
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/auth/register` | Register a new user | Public |
+| POST | `/auth/login` | Log in | Public |
+| POST | `/auth/logout` | Log out | Private |
+| POST | `/auth/refresh` | Refresh access token | Public |
+| GET | `/auth/profile` | Get current user profile | Private |
+| POST | `/auth/change-password` | Change password | Private |
 
-**Users**
-- `GET /users` - Get all users (paginated)
-- `GET /users/:id` - Get user by ID
-- `PUT /users/profile` - Update profile
+### Users
 
-**Donations**
-- `POST /donations` - Create donation
-- `GET /donations` - List donations (paginated)
-- `GET /donations/my-donations` - User's donations
-- `PUT /donations/:id` - Update donation
-- `DELETE /donations/:id` - Delete donation
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/users` | List all users (paginated) | Private |
+| GET | `/users/email` | Get user by email query | Private |
+| GET | `/users/:id` | Get user by ID | Private |
+| PUT | `/users/profile` | Update own profile | Private |
+| DELETE | `/users/account` | Delete own account | Private |
 
-**System**
-- `GET /health` - Basic health check
-- `GET /health/detailed` - Detailed system status
+### Donations
 
-## 🛠️ Technology Stack
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/donations` | Create a donation | Private |
+| GET | `/donations` | List donations (paginated, filterable by status) | Private |
+| GET | `/donations/my-donations` | List current user's donations | Private |
+| GET | `/donations/:id` | Get donation by ID | Private |
+| PUT | `/donations/:id` | Update donation (owner only) | Private |
+| DELETE | `/donations/:id` | Delete donation (owner only) | Private |
+
+### System
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Basic health check |
+| GET | `/health/detailed` | Detailed system status |
+
+For the full API documentation, see [backend/API_DOCUMENTATION.md](./backend/API_DOCUMENTATION.md).
+
+## Technology Stack
 
 ### Frontend
-- **Framework**: React 18
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **Routing**: React Router v6
-- **HTTP Client**: Axios
-- **State Management**: React Context API
-- **UI Notifications**: React Hot Toast
-- **Testing**: Vitest, Playwright
-- **Styling**: CSS3
+
+| Category | Technology |
+|----------|-----------|
+| Framework | React 18 |
+| Language | TypeScript |
+| Build Tool | Vite |
+| Routing | React Router v6 |
+| HTTP Client | Axios |
+| State | React Context API |
+| Maps | Google Maps API (`@react-google-maps/api`, `use-places-autocomplete`) |
+| Email | EmailJS (`@emailjs/browser`) |
+| Icons | FontAwesome (`@fortawesome/react-fontawesome`) |
+| Notifications | React Hot Toast |
+| Unit Testing | Vitest, Testing Library |
+| E2E Testing | Playwright |
+| Styling | CSS3 |
 
 ### Backend
-- **Framework**: Express.js
-- **Language**: TypeScript
-- **Database**: MySQL
-- **Authentication**: JWT (jsonwebtoken)
-- **Validation**: express-validator
-- **Logging**: Winston
-- **Security**: Helmet, CORS, bcrypt
-- **Development**: Nodemon, ts-node
 
-## 📂 Directory Details
+| Category | Technology |
+|----------|-----------|
+| Framework | Express.js |
+| Language | TypeScript |
+| Database | MySQL (mysql2) |
+| Auth | JWT (`jsonwebtoken`), bcrypt |
+| Validation | express-validator |
+| Logging | Winston |
+| Security | Helmet, CORS, express-rate-limit, csurf, xss |
+| Compression | compression |
+| Testing | Jest, Supertest |
+| Dev Tools | Nodemon, ts-node |
 
-### Frontend (`/frontend`)
-
-```
-frontend/
-├── src/
-│   ├── Components/
-│   │   ├── MPComponents/    # Main page components
-│   │   ├── pages/           # Page components
-│   │   ├── shared/          # Shared components
-│   │   └── Axios/           # HTTP client setup
-│   ├── context/             # React Context
-│   ├── hooks/               # Custom hooks
-│   ├── services/            # API services
-│   ├── types/               # TypeScript types
-│   ├── utils/               # Utility functions
-│   ├── constants/           # Constants
-│   ├── App.tsx              # Main App component
-│   └── index.tsx            # Entry point
-├── public/                  # Static assets
-├── e2e/                     # E2E tests
-└── package.json
-```
-
-### Backend (`/backend`)
-
-```
-backend/
-├── src/
-│   ├── controllers/         # Route controllers
-│   │   ├── auth.controller.ts
-│   │   ├── user.controller.ts
-│   │   ├── donation.controller.ts
-│   │   └── health.controller.ts
-│   ├── middleware/          # Express middleware
-│   │   ├── auth.ts
-│   │   ├── errorHandler.ts
-│   │   ├── validation.ts
-│   │   ├── security.ts
-│   │   └── requestId.ts
-│   ├── routes/              # API routes
-│   ├── config/              # Configuration
-│   │   ├── database.ts
-│   │   └── index.ts
-│   ├── types/               # TypeScript types
-│   ├── utils/               # Utilities
-│   │   ├── logger.ts
-│   │   ├── response.ts
-│   │   └── constants.ts
-│   ├── app.ts               # Express app
-│   └── server.ts            # Server entry
-└── package.json
-```
-
-## 🔧 Configuration
+## Configuration
 
 ### Frontend Environment Variables
 
-Create `frontend/.env`:
+Create `frontend/.env` (see `frontend/.env.example`):
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080
+NODE_ENV=development
+```
+
+Optional variables for Google Maps and EmailJS:
+
+```env
+VITE_GOOGLE_MAPS_API_KEY=your-google-maps-key
+VITE_EMAILJS_SERVICE_ID=gmail
+VITE_EMAILJS_TEMPLATE_ID=Automated_Email
+VITE_EMAILJS_USER_ID=your-emailjs-user-id
 ```
 
 ### Backend Environment Variables
 
-Create `backend/.env`:
+Create `backend/.env` (see `backend/.env.example`):
 
 ```env
 # Server
@@ -281,6 +265,10 @@ JWT_REFRESH_EXPIRES_IN=7d
 # CORS
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
 # Security
 BCRYPT_ROUNDS=10
 
@@ -289,35 +277,39 @@ LOG_LEVEL=info
 LOG_FILE=logs/app.log
 ```
 
-## 🗄️ Database Setup
+## Database Setup
 
 ```sql
--- Create database
 CREATE DATABASE foodable;
-
--- Tables are created automatically on first run
 ```
 
-The backend will automatically create these tables:
-- `donator` - User accounts
-- `donations` - Food donations
-- `food_packages` - Donation packages
-- `refresh_tokens` - JWT refresh tokens
+The backend automatically creates the required tables on first run:
 
-## 🧪 Testing
+- `donator` -- User accounts
+- `donations` -- Food donations
+- `food_packages` -- Donation packages
+- `refresh_tokens` -- JWT refresh tokens
+
+## Testing
 
 ### Frontend Tests
 
 ```bash
 cd frontend
 
-# Unit tests
+# Unit tests (Vitest)
 npm test
 
-# E2E tests with Playwright
+# Tests with UI
+npm run test:ui
+
+# Tests with coverage
+npm run test:coverage
+
+# E2E tests (Playwright)
 npm run test:e2e
 
-# E2E tests with UI
+# E2E tests with interactive UI
 npm run test:e2e:ui
 ```
 
@@ -326,222 +318,158 @@ npm run test:e2e:ui
 ```bash
 cd backend
 
-# Run all tests with coverage
+# All tests with coverage
 npm test
 
-# Run in watch mode
+# Watch mode
 npm run test:watch
 
-# Run unit tests only
+# Unit tests only
 npm run test:unit
 
-# Run integration tests only
+# Integration tests only
 npm run test:integration
 ```
 
-## 🔄 CI/CD Pipeline
+## CI/CD
 
-### Automated Workflows
+The project uses **5 GitHub Actions workflows**:
 
-The project includes **13 independent GitHub Actions workflows**:
-
-#### Release Pipeline
-- **Release** - Automated semantic versioning and releases
-- **Conventional Commits** - Commit message validation
-
-#### Testing Pipelines
-- **Frontend Tests** - Unit & component tests (3 Node versions)
-- **Backend Tests** - Unit & integration tests with MySQL
-- **E2E Tests** - Playwright across 3 browsers (sharded)
-
-#### Quality Pipelines
-- **Linting** - ESLint, Prettier, TypeScript checks
-- **Code Review** - Automated reviews, complexity analysis
-- **Performance** - Lighthouse, bundle size, load testing
-
-#### Security Pipelines
-- **Security Scan** - npm audit, Snyk, CodeQL, secret detection
-
-#### Build & Deploy Pipelines
-- **Build** - Production builds for frontend & backend
-- **Deploy** - Multi-environment deployment
-- **CI Pipeline** - Main orchestrator
-- **PR Validation** - PR title, size, conflicts
-
-### Running Workflows
-
-```bash
-# View all workflows
-gh workflow list
-
-# Run specific workflow
-gh workflow run frontend-tests.yml
-gh workflow run backend-tests.yml
-
-# View workflow status
-gh run list --workflow=ci.yml
-
-# View detailed logs
-gh run view <run-id> --log
-```
+| Workflow | File | Trigger | Purpose |
+|----------|------|---------|---------|
+| **CI** | `ci.yml` | Push/PR to `main`/`develop` | Lint, type-check, frontend tests, backend tests (with MySQL service), production build |
+| **PR Checks** | `pr-checks.yml` | Pull requests | Validate PR title (conventional commits), check PR size, auto-label, ESLint review via Reviewdog |
+| **Release** | `release.yml` | Push to `main` | Automated semantic versioning, changelog generation, GitHub release |
+| **Deploy** | `deploy.yml` | Manual or called by Release | Build both apps, package release tarball, create GitHub release asset |
+| **Scheduled** | `scheduled.yml` | Weekly (Monday 2 AM UTC) | Deep security scan (npm audit, CodeQL, TruffleHog, license check), dependency freshness check, Lighthouse performance audit, Node.js compatibility matrix (18/20/22) |
 
 ### Quality Gates
 
-All PRs must pass:
-- ✅ Frontend tests
-- ✅ Backend tests
-- ✅ Linting
-- ✅ Build
-- ✅ TypeScript checks
-- ✅ Coverage thresholds (70% backend)
+All pull requests must pass:
 
-See [CI/CD Documentation](./docs/CICD_DOCUMENTATION.md) for complete details.
+- ESLint and Prettier checks (frontend + backend)
+- TypeScript compilation (both workspaces)
+- Frontend unit tests with coverage
+- Backend unit + integration tests with MySQL
+- Production build verification
 
-## 📦 Release Management
+### Commit Convention
 
-### Automated Semantic Releases
-
-Every push to `main` triggers an automated release based on [Conventional Commits](https://www.conventionalcommits.org/):
-
-- **feat**: New feature → **Minor** version (1.0.0 → 1.1.0)
-- **fix**: Bug fix → **Patch** version (1.0.0 → 1.0.1)
-- **BREAKING CHANGE**: Breaking change → **Major** version (1.0.0 → 2.0.0)
-
-**Starting Version**: v1.0.0
-
-### Commit Format
+The project enforces [Conventional Commits](https://www.conventionalcommits.org/) via commitlint:
 
 ```bash
-# Feature (minor bump)
-git commit -m "feat: add user dashboard"
-
-# Bug fix (patch bump)
-git commit -m "fix: resolve login issue"
-
-# Breaking change (major bump)
-git commit -m "feat!: redesign API authentication"
+feat: add user dashboard          # Minor version bump
+fix: resolve login timeout        # Patch version bump
+feat!: redesign auth API          # Major version bump (breaking)
+docs: update API guide            # Patch version bump
 ```
 
-### Release Process
+Every push to `main` triggers semantic-release, which automatically calculates the next version, updates `CHANGELOG.md`, and creates a GitHub release.
 
-1. Push to main with conventional commits
-2. Semantic release analyzes commits
-3. Version calculated automatically
-4. CHANGELOG.md updated
-5. GitHub release created
-6. Deployment triggered
+See [docs/RELEASE_PROCESS.md](./docs/RELEASE_PROCESS.md) and [docs/CICD_DOCUMENTATION.md](./docs/CICD_DOCUMENTATION.md) for full details.
 
-See [Release Process Documentation](./docs/RELEASE_PROCESS.md) for details.
+## Available Scripts
 
-## 📦 Available Scripts
+### Root Level (npm workspaces)
 
-### Root Level
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start frontend + backend in parallel |
+| `npm run build` | Build both projects |
+| `npm test` | Run all tests |
+| `npm run lint` | Lint all code |
+| `npm run clean` | Remove node_modules and build artifacts |
+
+### Frontend
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev:frontend` | Vite dev server at `localhost:3000` |
+| `npm run build:frontend` | Production build to `frontend/dist/` |
+| `npm run test:frontend` | Vitest unit tests |
+| `npm run lint:frontend` | ESLint |
+
+### Backend
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev:backend` | Nodemon dev server at `localhost:8080` |
+| `npm run build:backend` | TypeScript compilation to `backend/dist/` |
+| `npm run test:backend` | Jest tests with coverage |
+| `npm run lint:backend` | ESLint |
+
+## Deployment
+
+### Frontend
 
 ```bash
-npm run dev              # Start both frontend and backend
-npm run build            # Build both projects
-npm test                 # Run all tests
-npm run lint             # Lint all code
-npm run clean            # Clean all node_modules and build artifacts
+cd frontend && npm run build
+# Deploy the dist/ folder to your hosting provider
 ```
 
-### Frontend Specific
+Recommended: Vercel, Netlify, or GitHub Pages.
+
+### Backend
 
 ```bash
-npm run dev:frontend     # Start frontend dev server
-npm run build:frontend   # Build frontend for production
-npm run test:frontend    # Run frontend tests
-npm run lint:frontend    # Lint frontend code
+cd backend && npm run build && npm start
 ```
 
-### Backend Specific
+Recommended: Railway, Heroku, DigitalOcean, or AWS EC2.
 
-```bash
-npm run dev:backend      # Start backend dev server
-npm run build:backend    # Build backend for production
-npm run test:backend     # Run backend tests
-npm run lint:backend     # Lint backend code
-```
+Make sure all environment variables are configured in your deployment platform.
 
-## 🚀 Deployment
+## Documentation
 
-### Frontend Deployment
+Key documents in the `docs/` directory:
 
-```bash
-cd frontend
-npm run build
-# Deploy the 'dist' folder to your hosting service
-```
+| Document | Description |
+|----------|-------------|
+| [CI/CD Documentation](./docs/CICD_DOCUMENTATION.md) | Full reference for all GitHub Actions workflows |
+| [CI/CD Quick Reference](./docs/CICD_QUICK_REFERENCE.md) | Commands and cheat sheet |
+| [Release Process](./docs/RELEASE_PROCESS.md) | Semantic versioning and conventional commits |
+| [Testing Guide](./docs/TESTING_GUIDE.md) | Test strategy, running tests, writing tests |
+| [Accessibility Report](./docs/ACCESSIBILITY_REPORT.md) | WCAG compliance and ARIA implementation |
+| [Monorepo Migration](./docs/MONOREPO_MIGRATION.md) | Migration to npm workspaces |
+| [Async/Await Review](./docs/ASYNC_AWAIT_REVIEW.md) | Async pattern review |
+| [Backend Improvements](./docs/BACKEND_IMPROVEMENTS.md) | Backend architecture notes |
 
-Recommended platforms:
-- Vercel
-- Netlify
-- GitHub Pages
+Additional references:
 
-### Backend Deployment
+- [Backend API Documentation](./backend/API_DOCUMENTATION.md)
+- [Contributing Guide](./CONTRIBUTING.md)
 
-```bash
-cd backend
-npm run build
-npm start
-```
-
-Recommended platforms:
-- Heroku
-- Railway
-- DigitalOcean
-- AWS EC2
-
-### Environment Variables
-
-Make sure to set all environment variables in your deployment platform.
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+2. Create a feature branch (`git checkout -b feat/your-feature`)
+3. Make your changes following the coding standards
+4. Commit using conventional commit messages (`git commit -m "feat: add feature"`)
+5. Push to your branch (`git push origin feat/your-feature`)
+6. Open a Pull Request
 
-### Code Standards
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full guide, including coding standards, testing expectations, and the PR review process.
 
-- Follow ESLint and Prettier configurations
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 👥 Team
+## Team
 
-Foodable Team - [@BenDXC](https://github.com/BenDXC)
+Foodable Team -- [@BenDXC](https://github.com/BenDXC)
 
-## 🙏 Acknowledgments
+## Support
 
-- React community
-- Express.js community
-- All contributors and supporters
-
-## 📞 Support
-
-For issues and questions:
 - GitHub Issues: [Create an issue](https://github.com/BenDXC/Foodable-Web-Dev/issues)
 - Email: foodable7@gmail.com
 
-## 🗺️ Roadmap
+## Roadmap
 
-- [ ] Add file upload for donation images
-- [ ] Implement real-time notifications
-- [ ] Add email notifications
-- [ ] Implement admin dashboard
-- [ ] Add donation analytics
-- [ ] Mobile app development
-- [ ] Multi-language support
-- [ ] Integration with food bank APIs
-
----
-
-**Made with ❤️ by the Foodable Team**
+- [ ] File uploads for donation images
+- [ ] Real-time notifications
+- [ ] Email notifications for donation status changes
+- [ ] Admin dashboard
+- [ ] Donation analytics and reporting
+- [ ] Mobile application
+- [ ] Multi-language support (i18n)
+- [ ] Third-party food bank API integrations

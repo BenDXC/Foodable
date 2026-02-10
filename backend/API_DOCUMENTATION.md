@@ -506,16 +506,6 @@ curl -X GET http://localhost:8080/api/v1/donations/my-donations \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-## Postman Collection
-
-Import the following JSON into Postman for a complete collection of API requests:
-
-[You can create a Postman collection export and add it here]
-
-## WebSocket Support
-
-Not currently implemented. Future versions may include real-time updates for donations.
-
 ## Versioning
 
 The API uses URL versioning. Current version: `v1`

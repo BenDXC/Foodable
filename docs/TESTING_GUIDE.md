@@ -550,34 +550,15 @@ npm test
 
 ## Continuous Integration
 
-### CI Pipeline Recommendations
+### CI Pipeline
 
-```yaml
-name: Tests
+Tests run automatically via the `ci.yml` workflow on every push and PR. The CI workflow:
 
-on: [push, pull_request]
+- Runs frontend tests (Vitest) with coverage uploaded to Codecov
+- Runs backend tests (Jest) with a MySQL 8.0 service container and coverage uploaded to Codecov
+- Uses Node.js 20 with npm caching
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-      
-      - name: Install dependencies
-        run: npm install
-      
-      - name: Run tests
-        run: npm test
-      
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-```
+See [CI/CD Documentation](./CICD_DOCUMENTATION.md) for full details.
 
 ## Test Maintenance
 

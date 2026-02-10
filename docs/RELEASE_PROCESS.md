@@ -302,11 +302,11 @@ npx husky add .husky/commit-msg 'npx --no -- commitlint --edit ${1}'
 
 ### PR Validation
 
-The `conventional-commits.yml` workflow validates:
-- ✅ All commit messages in PR
-- ✅ PR title format
-- ✅ Breaking change detection
-- ✅ Provides helpful error messages
+The `pr-checks.yml` workflow validates:
+- PR title follows conventional commit format (via `amannn/action-semantic-pull-request`)
+- Supported types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+- Breaking change detection
+- Helpful error messages on invalid titles
 
 ## 📋 Release Checklist
 
