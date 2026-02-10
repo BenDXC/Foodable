@@ -42,14 +42,6 @@ jobs:
           echo "=== Backend ==="
           cd backend && npm audit --json > ../backend-audit.json || true
 
-      - name: Snyk scan
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high --all-projects
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
