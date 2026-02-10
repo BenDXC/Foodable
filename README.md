@@ -343,7 +343,11 @@ npm run test:integration
 
 ### Automated Workflows
 
-The project includes **11 independent GitHub Actions workflows**:
+The project includes **13 independent GitHub Actions workflows**:
+
+#### Release Pipeline
+- **Release** - Automated semantic versioning and releases
+- **Conventional Commits** - Commit message validation
 
 #### Testing Pipelines
 - **Frontend Tests** - Unit & component tests (3 Node versions)
@@ -392,6 +396,42 @@ All PRs must pass:
 - ✅ Coverage thresholds (70% backend)
 
 See [CI/CD Documentation](./docs/CICD_DOCUMENTATION.md) for complete details.
+
+## 📦 Release Management
+
+### Automated Semantic Releases
+
+Every push to `main` triggers an automated release based on [Conventional Commits](https://www.conventionalcommits.org/):
+
+- **feat**: New feature → **Minor** version (1.0.0 → 1.1.0)
+- **fix**: Bug fix → **Patch** version (1.0.0 → 1.0.1)
+- **BREAKING CHANGE**: Breaking change → **Major** version (1.0.0 → 2.0.0)
+
+**Starting Version**: v1.0.0
+
+### Commit Format
+
+```bash
+# Feature (minor bump)
+git commit -m "feat: add user dashboard"
+
+# Bug fix (patch bump)
+git commit -m "fix: resolve login issue"
+
+# Breaking change (major bump)
+git commit -m "feat!: redesign API authentication"
+```
+
+### Release Process
+
+1. Push to main with conventional commits
+2. Semantic release analyzes commits
+3. Version calculated automatically
+4. CHANGELOG.md updated
+5. GitHub release created
+6. Deployment triggered
+
+See [Release Process Documentation](./docs/RELEASE_PROCESS.md) for details.
 
 ## 📦 Available Scripts
 

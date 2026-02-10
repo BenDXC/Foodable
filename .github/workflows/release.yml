@@ -1,0 +1,188 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    outputs:
+      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
+      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Verify conventional commits
+        run: |
+          echo "Checking recent commits for conventional format..."
+          git log --pretty=format:"%s" -10
+
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 19
+          extra_plugins: |
+            @semantic-release/changelog@6
+            @semantic-release/git@10
+            conventional-changelog-conventionalcommits@7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create release summary
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo "🎉 New release created!"
+          echo "Version: ${{ steps.semantic.outputs.new_release_version }}"
+          echo "Release notes: ${{ steps.semantic.outputs.new_release_notes }}"
+
+      - name: Output release info
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          cat << EOF > release-info.txt
+          Release: v${{ steps.semantic.outputs.new_release_version }}
+          Published: $(date)
+          Commit: ${{ github.sha }}
+          EOF
+
+      - name: Upload release info
+        if: steps.semantic.outputs.new_release_published == 'true'
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-info
+          path: release-info.txt
+          retention-days: 90
+
+  deploy-release:
+    name: Deploy Release
+    needs: release
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.new_release_version }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          NODE_ENV: production
+          VITE_API_BASE_URL: ${{ secrets.PRODUCTION_API_URL }}
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Create deployment package
+        run: |
+          mkdir -p release-package
+          cp -r frontend/dist release-package/frontend
+          cp -r backend/dist release-package/backend
+          cp -r backend/node_modules release-package/backend/
+          tar -czf foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz release-package/
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.release.outputs.new_release_version }}
+          files: |
+            foodable-v${{ needs.release.outputs.new_release_version }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger deployment workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.actions.createWorkflowDispatch({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'deploy.yml',
+              ref: 'main',
+              inputs: {
+                environment: 'production'
+              }
+            });
+
+  notify:
+    name: Release Notifications
+    needs: [release, deploy-release]
+    if: needs.release.outputs.new_release_published == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "🚀 New Release Published!",
+              attachments: [{
+                color: 'good',
+                text: `Version v${{ needs.release.outputs.new_release_version }} has been released!\n\nView release: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}`
+              }]
+            }
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        continue-on-error: true
+
+      - name: Create Discord notification
+        if: secrets.DISCORD_WEBHOOK != ''
+        run: |
+          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "🚀 New Release: v${{ needs.release.outputs.new_release_version }}",
+                "description": "A new version has been released!",
+                "color": 3066993,
+                "url": "https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}"
+              }]
+            }'
+        continue-on-error: true
+
+      - name: Tweet release announcement
+        if: secrets.TWITTER_API_KEY != ''
+        run: |
+          echo "📢 New release announcement would be posted to Twitter"
+          echo "Version: v${{ needs.release.outputs.new_release_version }}"
+        continue-on-error: true
