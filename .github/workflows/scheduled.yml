@@ -231,22 +231,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: |
-          cd frontend && npm run build && cd ..
-          cd backend && npm run build
-
-      - name: Frontend tests
+      - name: Build frontend
         working-directory: frontend
-        run: npm test -- --run
-        env:
-          CI: true
+        run: npm run build
 
-      - name: Backend tests
+      - name: Build backend
         working-directory: backend
-        run: npm test
-        env:
-          CI: true
-          NODE_ENV: test
-          JWT_SECRET: test-jwt-secret-key
-          JWT_REFRESH_SECRET: test-refresh-secret-key
+        run: npm run build

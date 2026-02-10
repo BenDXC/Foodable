@@ -30,20 +30,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: ESLint
-        run: |
-          cd frontend && npm run lint
-          cd ../backend && npm run lint
+      - name: ESLint - Frontend
+        working-directory: frontend
+        run: npm run lint
 
-      - name: Prettier
-        run: |
-          npx prettier --check "frontend/src/**/*.{ts,tsx,js,jsx,json,css}"
-          npx prettier --check "backend/src/**/*.{ts,js,json}"
+      - name: ESLint - Backend
+        working-directory: backend
+        run: npm run lint
 
-      - name: TypeScript
-        run: |
-          cd frontend && npx tsc --noEmit
-          cd ../backend && npx tsc --noEmit
+      - name: Prettier - Frontend
+        run: npx prettier --check "frontend/src/**/*.{ts,tsx,js,jsx,json,css}"
+
+      - name: Prettier - Backend
+        run: npx prettier --check "backend/src/**/*.{ts,js,json}"
+
+      - name: TypeScript - Frontend
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: TypeScript - Backend
+        working-directory: backend
+        run: npx tsc --noEmit
 
   test-frontend:
     name: Frontend Tests
