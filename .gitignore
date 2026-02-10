@@ -1,0 +1,89 @@
+# Foodable Monorepo - Unified .gitignore
+
+# ===== Root Level =====
+node_modules/
+*.log
+npm-debug.log*
+.DS_Store
+.env
+.env.local
+.env.production
+
+# ===== Frontend =====
+# Dependencies
+frontend/node_modules/
+frontend/package-lock.json
+
+# Build output
+frontend/dist/
+frontend/build/
+frontend/.vite/
+
+# Testing
+frontend/coverage/
+frontend/.nyc_output/
+frontend/test-results/
+frontend/playwright-report/
+
+# IDE
+frontend/.vscode/
+frontend/.idea/
+
+# Misc
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+
+# ===== Backend =====
+# Dependencies
+backend/node_modules/
+backend/package-lock.json
+
+# Build output
+backend/dist/
+backend/build/
+
+# Logs
+backend/logs/
+backend/*.log
+
+# Environment
+backend/.env
+backend/.env.local
+backend/.env.production
+
+# Testing
+backend/coverage/
+backend/.nyc_output/
+
+# IDE
+backend/.vscode/
+backend/.idea/
+
+# ===== Shared =====
+# IDE (root level)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+temp/
+.temp/
+
+# Build artifacts
+*.tgz
+*.zip
+
+# Documentation build
+docs/build/
+docs/.docusaurus/
+
+# Old structure (to be removed)
+Foodable Website/
