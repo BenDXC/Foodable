@@ -159,6 +159,10 @@ jobs:
     needs: [release, deploy-release]
     if: needs.release.outputs.new_release_published == 'true'
     runs-on: ubuntu-latest
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
 
     steps:
       - name: Send Slack notification
@@ -174,13 +178,12 @@ jobs:
                 text: `Version v${{ needs.release.outputs.new_release_version }} has been released!\n\nView release: https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.new_release_version }}`
               }]
             }
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
         continue-on-error: true
 
       - name: Create Discord notification
-        if: secrets.DISCORD_WEBHOOK != ''
+        if: env.DISCORD_WEBHOOK != ''
         run: |
-          curl -X POST "${{ secrets.DISCORD_WEBHOOK }}" \
+          curl -X POST "${{ env.DISCORD_WEBHOOK }}" \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -193,7 +196,7 @@ jobs:
         continue-on-error: true
 
       - name: Tweet release announcement
-        if: secrets.TWITTER_API_KEY != ''
+        if: env.TWITTER_API_KEY != ''
         run: |
           echo "📢 New release announcement would be posted to Twitter"
           echo "Version: v${{ needs.release.outputs.new_release_version }}"

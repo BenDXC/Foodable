@@ -28,7 +28,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           reporter: github-pr-review
           eslint_flags: 'frontend/src/**/*.{ts,tsx} backend/src/**/*.ts'
-          fail_on_error: false
           filter_mode: added
 
       - name: Run TypeScript check with reviewdog
