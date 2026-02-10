@@ -38,27 +38,28 @@ jobs:
       - name: Check PR size
         run: |
           CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
-          ADDITIONS=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oP '\d+(?= insertion)')
-          DELETIONS=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oP '\d+(?= deletion)')
+          ADDITIONS=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oP '\d+(?= insertion)' || echo "0")
+          DELETIONS=$(git diff --shortstat origin/${{ github.base_ref }}...HEAD | grep -oP '\d+(?= deletion)' || echo "0")
           
           echo "Files changed: $CHANGED_FILES"
           echo "Lines added: ${ADDITIONS:-0}"
           echo "Lines deleted: ${DELETIONS:-0}"
           
           if [ "$CHANGED_FILES" -gt "100" ]; then
-            echo "⚠️ Warning: Large PR with $CHANGED_FILES files changed"
+            echo "Warning: Large PR with $CHANGED_FILES files changed"
             echo "::warning::Consider splitting into smaller PRs"
           fi
 
       - name: Check for breaking changes
         run: |
           if git diff origin/${{ github.base_ref }}...HEAD | grep -i "breaking change"; then
-            echo "⚠️ Breaking changes detected"
+            echo "Warning: Breaking changes detected"
             echo "::warning::This PR contains breaking changes"
           fi
+        continue-on-error: true
 
       - name: Labeler
-        uses: actions/labeler@v4
+        uses: actions/labeler@v5
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -77,10 +78,10 @@ jobs:
         run: |
           git fetch origin ${{ github.base_ref }}
           if git merge-tree $(git merge-base HEAD origin/${{ github.base_ref }}) HEAD origin/${{ github.base_ref }} | grep -q "<<<<<"; then
-            echo "❌ Merge conflicts detected"
+            echo "Merge conflicts detected"
             exit 1
           else
-            echo "✅ No merge conflicts"
+            echo "No merge conflicts"
           fi
 
   required-checks:
@@ -94,8 +95,8 @@ jobs:
         run: |
           if [ "${{ needs.validate-pr.result }}" != "success" ] || \
              [ "${{ needs.conflict-check.result }}" != "success" ]; then
-            echo "❌ PR validation failed"
+            echo "PR validation failed"
             exit 1
           else
-            echo "✅ PR validation passed"
+            echo "PR validation passed"
           fi

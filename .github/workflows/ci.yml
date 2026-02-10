@@ -53,20 +53,20 @@ jobs:
              [ "${{ needs.frontend-tests.result }}" == "failure" ] || \
              [ "${{ needs.backend-tests.result }}" == "failure" ] || \
              [ "${{ needs.build.result }}" == "failure" ]; then
-            echo "❌ CI Pipeline Failed"
+            echo "CI Pipeline Failed"
             exit 1
           fi
           
           # Warn if security failed but don't block
           if [ "${{ needs.security.result }}" == "failure" ]; then
-            echo "⚠️ Security checks failed (non-blocking)"
+            echo "Warning: Security checks failed (non-blocking)"
           fi
           
-          echo "✅ CI Pipeline Passed"
+          echo "CI Pipeline Passed"
 
       - name: Create status comment on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
             const results = {
@@ -77,7 +77,7 @@ jobs:
               security: '${{ needs.security.result }}'
             };
             
-            const emoji = (result) => result === 'success' ? '✅' : result === 'failure' ? '❌' : '⚠️';
+            const emoji = (result) => result === 'success' ? 'pass' : result === 'failure' ? 'FAIL' : 'warn';
             
             const comment = `## CI Pipeline Results
             
@@ -89,7 +89,7 @@ jobs:
             | Build | ${emoji(results.build)} ${results.build} |
             | Security Scanning | ${emoji(results.security)} ${results.security} |
             
-            ${results.lint === 'success' && results.frontend === 'success' && results.backend === 'success' && results.build === 'success' ? '✅ **All checks passed!**' : '❌ **Some checks failed - please review**'}
+            ${results.lint === 'success' && results.frontend === 'success' && results.backend === 'success' && results.build === 'success' ? '**All checks passed!**' : '**Some checks failed - please review**'}
             `;
             
             github.rest.issues.createComment({

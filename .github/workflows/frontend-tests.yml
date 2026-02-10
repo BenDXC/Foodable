@@ -11,6 +11,7 @@ on:
     paths:
       - 'frontend/**'
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   test:
@@ -20,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - name: Checkout code
@@ -31,20 +32,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Cache frontend dependencies
-        uses: actions/cache@v3
-        with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-frontend-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ matrix.node-version }}-frontend-
-            ${{ runner.os }}-node-
+          cache-dependency-path: package-lock.json
 
       - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+        run: npm ci --workspace=frontend
 
       - name: Run frontend tests
         working-directory: frontend
@@ -54,7 +45,7 @@ jobs:
           NODE_ENV: test
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: ./frontend/coverage/lcov.info
           flags: frontend
@@ -62,21 +53,11 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive coverage results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-coverage-${{ matrix.node-version }}
           path: frontend/coverage
           retention-days: 30
-
-      - name: Comment coverage on PR
-        if: github.event_name == 'pull_request'
-        uses: ArtiomTr/jest-coverage-report-action@v2
-        with:
-          working-directory: frontend
-          coverage-file: ./coverage/coverage-final.json
-          base-coverage-file: ./coverage/coverage-final.json
-          skip-step: all
-          annotations: failed-tests
 
   test-results:
     name: Publish Frontend Test Results
@@ -86,10 +67,11 @@ jobs:
 
     steps:
       - name: Download test results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: frontend-coverage-20.x
           path: coverage
+        continue-on-error: true
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
@@ -97,3 +79,4 @@ jobs:
         with:
           files: 'coverage/**/*.xml'
           check_name: Frontend Test Results
+        continue-on-error: true

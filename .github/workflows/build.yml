@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [main, develop]
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   build-frontend:
@@ -26,11 +27,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
+        run: npm ci --workspace=frontend
 
       - name: Build frontend
         working-directory: frontend
@@ -43,10 +43,10 @@ jobs:
         working-directory: frontend
         run: |
           if [ ! -d "dist" ]; then
-            echo "❌ Build failed - dist directory not created"
+            echo "Build failed - dist directory not created"
             exit 1
           fi
-          echo "✅ Build successful"
+          echo "Build successful"
           ls -lah dist/
 
       - name: Analyze bundle size
@@ -57,7 +57,7 @@ jobs:
           du -h dist/assets/* | sort -h
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-build-${{ matrix.node-version }}
           path: frontend/dist
@@ -67,9 +67,9 @@ jobs:
         working-directory: frontend
         run: |
           if ls dist/assets/*.map 1> /dev/null 2>&1; then
-            echo "⚠️ Warning: Source maps found in production build"
+            echo "Warning: Source maps found in production build"
           else
-            echo "✅ No source maps in production build"
+            echo "No source maps in production build"
           fi
 
   build-backend:
@@ -90,11 +90,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install backend dependencies
-        working-directory: backend
-        run: npm ci
+        run: npm ci --workspace=backend
 
       - name: Build backend
         working-directory: backend
@@ -104,10 +103,10 @@ jobs:
         working-directory: backend
         run: |
           if [ ! -d "dist" ]; then
-            echo "❌ Build failed - dist directory not created"
+            echo "Build failed - dist directory not created"
             exit 1
           fi
-          echo "✅ Build successful"
+          echo "Build successful"
           ls -lah dist/
 
       - name: Verify TypeScript compilation
@@ -119,7 +118,7 @@ jobs:
           find dist -name "*.map" | wc -l
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: backend-build-${{ matrix.node-version }}
           path: backend/dist
@@ -145,8 +144,8 @@ jobs:
           
           if [ "${{ needs.build-frontend.result }}" != "success" ] || \
              [ "${{ needs.build-backend.result }}" != "success" ]; then
-            echo "❌ Build failed"
+            echo "Build failed"
             exit 1
           else
-            echo "✅ All builds successful"
+            echo "All builds successful"
           fi
