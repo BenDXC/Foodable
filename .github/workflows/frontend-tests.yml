@@ -25,17 +25,26 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: package-lock.json
+
+      - name: Cache frontend dependencies
+        uses: actions/cache@v5
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-frontend-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-frontend-
+            ${{ runner.os }}-node-
 
       - name: Install frontend dependencies
-        run: npm ci --workspace=frontend
+        working-directory: frontend
+        run: npm install
 
       - name: Run frontend tests
         working-directory: frontend
@@ -45,7 +54,7 @@ jobs:
           NODE_ENV: test
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./frontend/coverage/lcov.info
           flags: frontend
@@ -53,7 +62,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive coverage results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-coverage-${{ matrix.node-version }}
           path: frontend/coverage
@@ -67,7 +76,7 @@ jobs:
 
     steps:
       - name: Download test results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: frontend-coverage-20.x
           path: coverage
