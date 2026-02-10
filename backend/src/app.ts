@@ -1,7 +1,8 @@
-import express, { Application, Request, Response } from 'express';
+import express, { Application, Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import csurf from 'csurf';
 import { config } from './config';
 import routes from './routes';
 import {
@@ -21,6 +22,9 @@ import requestIdMiddleware from './middleware/requestId';
 
 // Handle uncaught errors
 handleUncaughtErrors();
+
+// CSRF protection setup (uses cookies to store the secret)
+const csrfProtection = csurf({ cookie: true });
 
 // Create Express app
 const app: Application = express();
@@ -49,6 +53,20 @@ app.use(requestLogger);
 
 // Sanitize input
 app.use(sanitizeInput);
+
+// CSRF middleware:
+// - For unsafe methods (POST, PUT, PATCH, DELETE), enforce CSRF protection.
+// - For safe methods, expose the token if generated without enforcing it.
+app.use(`/api/${config.API_VERSION}`, (req: Request, res: Response, next: NextFunction) => {
+  const method = req.method.toUpperCase();
+  const unsafeMethods = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+  if (!unsafeMethods.includes(method)) {
+    return next();
+  }
+
+  return csrfProtection(req, res, next);
+});
 
 // Rate limiting
 app.use(`/api/${config.API_VERSION}`, apiRateLimiter);
