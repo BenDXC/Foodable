@@ -1,0 +1,302 @@
+name: Scheduled Checks
+
+on:
+  schedule:
+    - cron: '0 2 * * 1'  # Weekly on Monday at 2 AM UTC
+  workflow_dispatch:
+
+concurrency:
+  group: scheduled
+  cancel-in-progress: true
+
+jobs:
+  # ── Full Security Scan ──────────────────────────────────────────────
+  security-deep:
+    name: Deep Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: npm audit (full)
+        run: |
+          echo "=== Frontend ==="
+          cd frontend && npm audit --json > ../frontend-audit.json || true && cd ..
+          echo "=== Backend ==="
+          cd backend && npm audit --json > ../backend-audit.json || true
+
+      - name: Snyk scan
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --all-projects
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+      - name: Secret scan
+        uses: trufflesecurity/trufflehog@v3.82.13
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: License check
+        run: |
+          npx license-checker --summary
+          npx license-checker --production --json > licenses.json
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            frontend-audit.json
+            backend-audit.json
+            licenses.json
+          retention-days: 30
+
+  # ── Dependency Updates ──────────────────────────────────────────────
+  dependency-check:
+    name: Dependency Updates
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        workspace: [frontend, backend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check outdated packages
+        working-directory: ${{ matrix.workspace }}
+        run: |
+          npm outdated || true
+          npm outdated --json > outdated.json || true
+
+      - name: Create issue if updates available
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const workspace = '${{ matrix.workspace }}';
+            try {
+              const outdated = JSON.parse(fs.readFileSync(`${workspace}/outdated.json`, 'utf8'));
+              const pkgs = Object.keys(outdated);
+              if (pkgs.length > 0) {
+                const list = pkgs.slice(0, 15).map(p =>
+                  `- \`${p}\`: ${outdated[p].current} → ${outdated[p].latest}`
+                ).join('\n');
+                const extra = pkgs.length > 15 ? `\n\n...and ${pkgs.length - 15} more` : '';
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `deps(${workspace}): ${pkgs.length} outdated packages`,
+                  body: `## Outdated packages in ${workspace}\n\n${list}${extra}`,
+                  labels: ['dependencies', workspace]
+                });
+              }
+            } catch (e) {
+              console.log('No outdated packages or error:', e.message);
+            }
+        continue-on-error: true
+
+  # ── E2E Tests (Full Suite) ──────────────────────────────────────────
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright
+        working-directory: frontend
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Start backend
+        working-directory: backend
+        run: npm start &
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_USER: root
+          DB_PASSWORD: test
+          DB_NAME: foodable_test
+          JWT_SECRET: test-secret
+          PORT: 8080
+
+      - name: Build & serve frontend
+        working-directory: frontend
+        run: |
+          npm run build
+          npx vite preview --port 5173 &
+        env:
+          VITE_API_BASE_URL: http://localhost:8080
+
+      - name: Wait for servers
+        run: |
+          timeout 60 bash -c 'until curl -sf http://localhost:5173 2>/dev/null; do sleep 2; done' || echo "Frontend not ready"
+          timeout 60 bash -c 'until curl -sf http://localhost:8080/api/v1/health 2>/dev/null; do sleep 2; done' || echo "Backend not ready"
+
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          CI: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-${{ matrix.browser }}
+          path: |
+            frontend/playwright-report/
+            frontend/test-results/
+          retention-days: 14
+
+  # ── Performance Audit ───────────────────────────────────────────────
+  performance:
+    name: Performance Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install & build frontend
+        working-directory: frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Start preview server
+        working-directory: frontend
+        run: npx vite preview --port 5173 &
+
+      - name: Wait for server
+        run: timeout 60 bash -c 'until curl -sf http://localhost:5173 2>/dev/null; do sleep 2; done'
+
+      - name: Lighthouse audit
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          urls: |
+            http://localhost:5173
+            http://localhost:5173/login
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Bundle size check
+        working-directory: frontend
+        run: |
+          TOTAL=$(du -sb dist/ | cut -f1)
+          MAX=$((5 * 1024 * 1024))
+          echo "Bundle: $(($TOTAL / 1024))KB / $(($MAX / 1024))KB limit"
+          du -h dist/assets/*.js 2>/dev/null | sort -h || true
+          [ $TOTAL -le $MAX ] || echo "::warning::Bundle exceeds 5MB limit"
+
+  # ── Node Compatibility ──────────────────────────────────────────────
+  compatibility:
+    name: Node.js Compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      matrix:
+        node-version: ['18', '20', '22']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: |
+          cd frontend && npm run build && cd ..
+          cd backend && npm run build
+
+      - name: Frontend tests
+        working-directory: frontend
+        run: npm test -- --run
+        env:
+          CI: true
+
+      - name: Backend tests
+        working-directory: backend
+        run: npm test
+        env:
+          CI: true
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-key
+          JWT_REFRESH_SECRET: test-refresh-secret-key

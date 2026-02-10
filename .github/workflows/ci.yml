@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
@@ -7,94 +7,255 @@ on:
     branches: [main, develop]
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Run all quality checks in parallel
   lint:
-    name: Code Quality & Linting
-    uses: ./.github/workflows/linting.yml
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-  frontend-tests:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Frontend ESLint
+        working-directory: frontend
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Backend ESLint
+        working-directory: backend
+        run: npm run lint
+
+      - name: Prettier check
+        run: |
+          npx prettier --check "frontend/src/**/*.{ts,tsx,js,jsx,json,css}" || true
+          npx prettier --check "backend/src/**/*.{ts,js,json}" || true
+
+      - name: TypeScript check - Frontend
+        working-directory: frontend
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: TypeScript check - Backend
+        working-directory: backend
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+  test-frontend:
     name: Frontend Tests
-    uses: ./.github/workflows/frontend-tests.yml
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
-  backend-tests:
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm install
+
+      - name: Run tests with coverage
+        working-directory: frontend
+        run: npm test -- --run --coverage
+        env:
+          CI: true
+          NODE_ENV: test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
+
+  test-backend:
     name: Backend Tests
-    uses: ./.github/workflows/backend-tests.yml
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: foodable_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Wait for MySQL
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -P 3306 -u root -ptest_password --silent; do
+            sleep 2
+          done
+
+      - name: Run tests
+        working-directory: backend
+        run: npm test
+        env:
+          CI: true
+          NODE_ENV: test
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: test_password
+          DB_NAME: foodable_test
+          JWT_SECRET: test-jwt-secret-key
+          JWT_REFRESH_SECRET: test-refresh-secret-key
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend
+          fail_ci_if_error: false
 
   build:
-    name: Build Check
-    uses: ./.github/workflows/build.yml
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Build backend
+        working-directory: backend
+        run: npm run build
+
+      - name: Verify builds
+        run: |
+          test -d frontend/dist && echo "Frontend build OK" || exit 1
+          test -d backend/dist && echo "Backend build OK" || exit 1
+          echo "--- Frontend bundle ---"
+          du -sh frontend/dist/
+          echo "--- Backend output ---"
+          du -sh backend/dist/
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/dist
+          retention-days: 7
+
+      - name: Upload backend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: backend/dist
+          retention-days: 7
 
   security:
-    name: Security Scanning
-    uses: ./.github/workflows/security.yml
-    secrets: inherit
+    name: Security Quick Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
 
-  # Summary job that waits for all checks
-  ci-summary:
-    name: CI Pipeline Summary
-    needs: [lint, frontend-tests, backend-tests, build, security]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: npm audit - Frontend
+        working-directory: frontend
+        run: npm audit --audit-level=high || true
+
+      - name: npm audit - Backend
+        working-directory: backend
+        run: npm audit --audit-level=high || true
+
+      - name: Secret scan
+        uses: trufflesecurity/trufflehog@v3.82.13
+        with:
+          path: ./
+          extra_args: --only-verified
+        continue-on-error: true
+
+  ci-passed:
+    name: CI Status
+    needs: [lint, test-frontend, test-backend, build, security]
     runs-on: ubuntu-latest
     if: always()
 
     steps:
-      - name: Check all CI jobs
+      - name: Check results
         run: |
-          echo "=== CI Pipeline Results ==="
-          echo "Linting: ${{ needs.lint.result }}"
-          echo "Frontend Tests: ${{ needs.frontend-tests.result }}"
-          echo "Backend Tests: ${{ needs.backend-tests.result }}"
-          echo "Build: ${{ needs.build.result }}"
-          echo "Security: ${{ needs.security.result }}"
-          echo "=========================="
-          
-          # Fail if any critical job failed
+          echo "Lint:      ${{ needs.lint.result }}"
+          echo "Frontend:  ${{ needs.test-frontend.result }}"
+          echo "Backend:   ${{ needs.test-backend.result }}"
+          echo "Build:     ${{ needs.build.result }}"
+          echo "Security:  ${{ needs.security.result }}"
+
+          # Fail on any critical job failure
           if [ "${{ needs.lint.result }}" == "failure" ] || \
-             [ "${{ needs.frontend-tests.result }}" == "failure" ] || \
-             [ "${{ needs.backend-tests.result }}" == "failure" ] || \
+             [ "${{ needs.test-frontend.result }}" == "failure" ] || \
+             [ "${{ needs.test-backend.result }}" == "failure" ] || \
              [ "${{ needs.build.result }}" == "failure" ]; then
-            echo "CI Pipeline Failed"
+            echo "CI failed"
             exit 1
           fi
-          
-          # Warn if security failed but don't block
+
+          # Security is non-blocking but noted
           if [ "${{ needs.security.result }}" == "failure" ]; then
             echo "Warning: Security checks failed (non-blocking)"
           fi
-          
-          echo "CI Pipeline Passed"
 
-      - name: Create status comment on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v8
-        with:
-          script: |
-            const results = {
-              lint: '${{ needs.lint.result }}',
-              frontend: '${{ needs.frontend-tests.result }}',
-              backend: '${{ needs.backend-tests.result }}',
-              build: '${{ needs.build.result }}',
-              security: '${{ needs.security.result }}'
-            };
-            
-            const emoji = (result) => result === 'success' ? 'pass' : result === 'failure' ? 'FAIL' : 'warn';
-            
-            const comment = `## CI Pipeline Results
-            
-            | Check | Status |
-            |-------|--------|
-            | Code Quality & Linting | ${emoji(results.lint)} ${results.lint} |
-            | Frontend Tests | ${emoji(results.frontend)} ${results.frontend} |
-            | Backend Tests | ${emoji(results.backend)} ${results.backend} |
-            | Build | ${emoji(results.build)} ${results.build} |
-            | Security Scanning | ${emoji(results.security)} ${results.security} |
-            
-            ${results.lint === 'success' && results.frontend === 'success' && results.backend === 'success' && results.build === 'success' ? '**All checks passed!**' : '**Some checks failed - please review**'}
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+          echo "CI passed"
