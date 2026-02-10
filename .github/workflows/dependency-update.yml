@@ -17,10 +17,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.x'
 
@@ -32,14 +32,14 @@ jobs:
           npm outdated --json > outdated.json || true
 
       - name: Upload outdated report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v6
         with:
           name: outdated-${{ matrix.workspace }}
           path: ${{ matrix.workspace }}/outdated.json
           retention-days: 7
 
       - name: Create Dependabot-style PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');

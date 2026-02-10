@@ -11,6 +11,7 @@ on:
     paths:
       - 'backend/**'
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   test:
@@ -20,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x]
 
     services:
       mysql:
@@ -38,27 +39,26 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
 
       - name: Cache backend dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: backend/node_modules
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-backend-${{ hashFiles('backend/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-backend-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ matrix.node-version }}-backend-
             ${{ runner.os }}-node-
 
       - name: Install backend dependencies
         working-directory: backend
-        run: npm ci
+        run: npm install
 
       - name: Wait for MySQL to be ready
         run: |
@@ -88,7 +88,7 @@ jobs:
           JWT_REFRESH_SECRET: test-refresh-secret-key
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v5
         with:
           files: ./backend/coverage/lcov.info
           flags: backend
@@ -96,7 +96,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: backend-test-results-${{ matrix.node-version }}
@@ -118,18 +118,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         working-directory: backend
-        run: npm ci
+        run: npm install
 
       - name: Run ESLint
         working-directory: backend
@@ -142,18 +141,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.x'
           cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         working-directory: backend
-        run: npm ci
+        run: npm install
 
       - name: Run TypeScript compiler check
         working-directory: backend
@@ -166,10 +164,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20.x'
 
