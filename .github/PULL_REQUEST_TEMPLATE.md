@@ -110,14 +110,16 @@ Please check:
 
 ### Automated Checks
 
-The following checks will run automatically:
-- ✅ Frontend tests
-- ✅ Backend tests
-- ✅ E2E tests
-- ✅ Linting
-- ✅ Build
-- ✅ Security scan
-- ✅ Performance tests
+The following checks will run automatically via the CI workflow:
+- Frontend lint, type-check, and unit tests
+- Backend lint, type-check, and unit/integration tests (with MySQL)
+- Production build verification
+
+PR-specific checks:
+- PR title validation (conventional commit format)
+- PR size check
+- Auto-labeling
+- ESLint annotations via Reviewdog
 
 Please ensure all checks pass before merging.
 

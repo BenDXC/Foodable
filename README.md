@@ -67,7 +67,7 @@ cp frontend/.env.example frontend/.env
 npm run dev
 
 # Or start them separately:
-npm run dev:frontend    # Frontend at http://localhost:5173
+npm run dev:frontend    # Frontend at http://localhost:3000
 npm run dev:backend     # Backend at http://localhost:8080
 ```
 
@@ -384,7 +384,7 @@ See [docs/RELEASE_PROCESS.md](./docs/RELEASE_PROCESS.md) and [docs/CICD_DOCUMENT
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev:frontend` | Vite dev server at `localhost:5173` |
+| `npm run dev:frontend` | Vite dev server at `localhost:3000` |
 | `npm run build:frontend` | Production build to `frontend/dist/` |
 | `npm run test:frontend` | Vitest unit tests |
 | `npm run lint:frontend` | ESLint |
@@ -425,12 +425,14 @@ Key documents in the `docs/` directory:
 
 | Document | Description |
 |----------|-------------|
-| [CICD_DOCUMENTATION.md](./docs/CICD_DOCUMENTATION.md) | Full CI/CD pipeline reference |
-| [RELEASE_PROCESS.md](./docs/RELEASE_PROCESS.md) | Semantic release workflow |
-| [TESTING_GUIDE.md](./docs/TESTING_GUIDE.md) | Testing strategy and setup |
-| [ACCESSIBILITY_REPORT.md](./docs/ACCESSIBILITY_REPORT.md) | WCAG compliance report |
-| [MONOREPO_MIGRATION.md](./docs/MONOREPO_MIGRATION.md) | Monorepo setup guide |
-| [BACKEND_IMPROVEMENTS.md](./docs/BACKEND_IMPROVEMENTS.md) | Backend architecture notes |
+| [CI/CD Documentation](./docs/CICD_DOCUMENTATION.md) | Full reference for all GitHub Actions workflows |
+| [CI/CD Quick Reference](./docs/CICD_QUICK_REFERENCE.md) | Commands and cheat sheet |
+| [Release Process](./docs/RELEASE_PROCESS.md) | Semantic versioning and conventional commits |
+| [Testing Guide](./docs/TESTING_GUIDE.md) | Test strategy, running tests, writing tests |
+| [Accessibility Report](./docs/ACCESSIBILITY_REPORT.md) | WCAG compliance and ARIA implementation |
+| [Monorepo Migration](./docs/MONOREPO_MIGRATION.md) | Migration to npm workspaces |
+| [Async/Await Review](./docs/ASYNC_AWAIT_REVIEW.md) | Async pattern review |
+| [Backend Improvements](./docs/BACKEND_IMPROVEMENTS.md) | Backend architecture notes |
 
 Additional references:
 

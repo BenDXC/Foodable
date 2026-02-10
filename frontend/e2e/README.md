@@ -119,16 +119,17 @@ npm run test:e2e:report
 - ARIA attributes
 - Screen reader support
 
-## 🔧 Configuration
+## Configuration
 
 Tests are configured in `playwright.config.ts`:
 - Base URL: `http://localhost:3000`
-- Browser: Chromium (Chrome)
-- Timeout: 30s per test
-- Retries: 2 on CI
-- Screenshots: On failure
-- Videos: On failure
+- Browser: Chromium
+- Fully parallel execution locally, single worker on CI
+- Retries: 2 on CI, 0 locally
+- Screenshots: On failure only
+- Videos: Retained on failure only
 - Traces: On first retry
+- Web server: `npm run dev` auto-started before tests
 
 ## 📝 Writing New Tests
 
