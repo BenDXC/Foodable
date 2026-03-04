@@ -1,7 +1,6 @@
-import { defineConfig } from 'vite';
+import { defineConfig, configDefaults } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   esbuild: {
@@ -27,9 +26,31 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: 'jsdom',
+    environment: 'node',
     setupFiles: './src/setupTests.ts',
     css: true,
     exclude: ['**/node_modules/**', '**/e2e/**', '**/dist/**', '**/build/**'],
+  },
+  coverage: {
+    provider: 'v8',
+    thresholds: {
+      lines: 80,
+      functions: 80,
+      branches: 80,
+      statements: 80,
+      perFile: true
+    },
+    reporter: ['text', 'json', 'html'],
+    include: [
+      'src/app/controllers/**/*.ts'
+    ],
+    exclude: [
+      ...configDefaults.coverage.exclude || [],
+      '**/tests/integration/**',
+      '**/tests/**/*.integration.test.ts',
+      '**/tests/**/*.integration.spec.ts',
+      '**/*.integration.ts',
+      '**/*.routes.ts',
+    ],
   },
 });

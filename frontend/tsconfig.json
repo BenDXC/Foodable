@@ -24,6 +24,16 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
+  "include": ["src/**/*"],
+  "exclude": [
+    "./*.ts",
+    "**/*.spec.ts",
+    "**/*.spec.js",
+    "./bin/*.spec.ts",
+    "./tests/*.spec.ts",
+    "./tests/*.spec.js",
+    "./tests/**/*.ts"
+
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
