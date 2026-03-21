@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    https: {},
+  },
   test: {
     globals: true,
     environment: 'jsdom',
@@ -12,11 +15,14 @@ export default defineConfig({
       reporter: ['text', 'lcov', 'html'],
       include: ['src/**/*.{ts,tsx}'],
       exclude: ['src/routes/**'],
-      all: true,
-      statements: 80,
-      functions: 80,
-      branches: 80,
-      lines: 80
+      thresholds: {
+        global: {
+          statements: 80,
+          functions: 80,
+          branches: 80,
+          lines: 80
+        }
+      }
     }
   }
 });
