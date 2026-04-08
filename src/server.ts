@@ -4,7 +4,8 @@ dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { containerMiddleware } from './middleware/container';
+
+import { containerMiddleware } from './middleware/container.js';
 import { connectDB } from './config/database.config';
 
 const app = express();

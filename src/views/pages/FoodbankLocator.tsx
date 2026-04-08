@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+
 import { FoodBank } from '../types/index';
 
 export const FoodBankLocator: React.FC = () => {

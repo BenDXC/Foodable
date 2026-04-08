@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { hashPassword, verifyPassword } from '../utils/authUtils';
 import { User } from '../models/user.model';
 

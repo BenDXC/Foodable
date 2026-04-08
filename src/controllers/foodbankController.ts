@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { FoodBank } from '../models/foodbank.model';
 
 export const getAllFoodBanks = async (_req: Request, res: Response) => {
