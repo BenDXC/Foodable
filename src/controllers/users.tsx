@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+
 import { fetchUsers } from '../services/user.service';
 import { User } from '../models/user';
 
