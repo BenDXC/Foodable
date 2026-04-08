@@ -6,7 +6,6 @@
 
 A full-stack web application connecting food donors with food banks and receivers, helping reduce food waste while supporting those in need. Donors can list surplus food, receivers can browse available food packages, and the platform provides a food bank locator powered by Google Maps.
 
-
 ## Quick Start
 
 ### Prerequisites
@@ -17,7 +16,7 @@ A full-stack web application connecting food donors with food banks and receiver
 
 ### Installation
 
-```bash
+````bash
 # Clone the repository
 git clone https://github.com/BenDXC/Foodable.git
 cd Foodable
@@ -41,11 +40,11 @@ npm run build
 # Or build separately:
 npm run build:frontend
 npm run build:backend
-```
+````
 
 ### Testing
 
-```bash
+````bash
 # Run all tests (frontend + backend)
 npm test
 
@@ -56,7 +55,7 @@ npm test
 # Lint all code
 npm run lint
 
-```
+````
 
 ## Features
 
@@ -88,25 +87,29 @@ npm run lint
 - **Async error handling** throughout with express-async-errors
 - **Unit and integration tests** with ViTest
 
-
 ## Testing
 
-
 # Unit tests (Vitest)
+
 npm test
 
 # Tests with UI
+
 npm run test:ui
 
 # Tests with coverage
+
 npm run test:coverage
 
 # E2E tests (Playwright)
+
 npm run test:e2e
 
 # E2E tests with interactive UI
+
 npm run test:e2e:ui
-```
+
+````
 
 
 ## CI/CD
@@ -140,20 +143,6 @@ feat: add user dashboard          # Minor version bump
 fix: resolve login timeout        # Patch version bump
 feat!: redesign auth API          # Major version bump (breaking)
 docs: update API guide            # Patch version bump
-```
+````
 
 Every push to `main` triggers semantic-release, which automatically calculates the next version, updates `CHANGELOG.md`, and creates a GitHub release.
-
-See [docs/RELEASE_PROCESS.md](./docs/RELEASE_PROCESS.md) and [docs/CICD_DOCUMENTATION.md](./docs/CICD_DOCUMENTATION.md) for full details.
-
-## Available Scripts
-
-### Root Level (npm workspaces)
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start frontend + backend in parallel |
-| `npm run build` | Build both projects |
-| `npm test` | Run all tests |
-| `npm run lint` | Lint all code |
-| `npm run clean` | Remove node_modules and build artifacts |
